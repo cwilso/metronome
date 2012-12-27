@@ -27,14 +27,17 @@ function resetCanvas (e) {
 var last16thNote = -1;
 
 function draw() {
-  if (last16thNote != current16thNote) {
+  var currentNote = current16thNote - 1;
+  if (currentNote < 0 )
+    currentNote = 15;
+  if (last16thNote != currentNote) {
     var x = Math.floor( canvas.width / 18 );
     c.clearRect(0,0,canvas.width, canvas.height); 
     for (var i=0; i<16; i++) {
-      c.fillStyle = ( current16thNote == i ) ? ((current16thNote%4 == 0)?"red":"blue") : "black";
+      c.fillStyle = ( currentNote == i ) ? ((currentNote%4 == 0)?"red":"blue") : "black";
       c.fillRect( x * (i+1), x, x/2, x/2 );
     }
-    last16thNote = current16thNote;
+    last16thNote = currentNote;
 
   //c.fillText("hello", 0,0); 
   }
