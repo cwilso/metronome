@@ -5,7 +5,7 @@ var current16thNote;		// What note is currently last scheduled?
 var currentNoteStartTime;	// When does the last currently scheduled note 
 							// start playing? Only used for visual tracking.
 var tempo = 120.0;			// tempo (in beats per minute)
-var lookahead = 20.0;		// How frequently to call scheduling function 
+var lookahead = 50.0;		// How frequently to call scheduling function 
 							//(in milliseconds)
 var scheduleAhead = 1.5*lookahead/1000;	// How far ahead to schedule audio (sec)
 							// This is calculated from lookahead, and overlaps 
