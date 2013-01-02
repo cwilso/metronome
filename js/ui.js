@@ -24,12 +24,11 @@ function resetCanvas (e) {
   window.scrollTo(0,0); 
 }
 
-var last16thNote = -1;
+var last16thNote = 0;
 
 function draw() {
-  var currentNote = current16thNote - 1;
-  if (currentNote < 0 )
-    currentNote = 15;
+  var currentNote = (audioContext.currentTime >= currentNoteStartTime ) ? current16thNote : last16thNote;
+
   if (last16thNote != currentNote) {
     var x = Math.floor( canvas.width / 18 );
     c.clearRect(0,0,canvas.width, canvas.height); 
