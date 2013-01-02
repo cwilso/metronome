@@ -60,8 +60,8 @@ function scheduleNote( beatNumber, time ) {
 		osc.frequency.value = 440.0;
 	else						// other 16th notes = high pitch
 		osc.frequency.value = 880.0;
-	osc.start( time );
-	osc.stop( time + noteLength );
+	osc.noteOn( time );
+	osc.noteOff( time + noteLength );
 }
 
 function scheduler() {
