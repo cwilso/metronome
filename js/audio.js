@@ -70,7 +70,7 @@ function play() {
 		current16thNote = -1;
 		nextNoteTime = 0.0;
 		intervalID = window.setInterval( scheduler, lookahead );
-		return "pause";
+		return "stop";
 	} else {
 		window.clearInterval( intervalID );
 		return "play";

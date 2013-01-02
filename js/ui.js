@@ -1,5 +1,8 @@
+var canvas,       // the canvas element
+  canvasContext;  // canvasContext is the canvas' context 2D
+var last16thNoteDrawn = 0;
 
-// shim layer with setTimeout fallback
+// shim the requestAnimationFrame API, with setTimeout fallback
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       ||
   window.webkitRequestAnimationFrame ||
@@ -11,10 +14,6 @@ window.requestAnimFrame = (function(){
   };
 })();
 
-var canvas,
-  c, // c is the canvas' context 2D
-  container;
-
 function resetCanvas (e) {
   // resize the canvas - but remember - this clears the canvas too.
   canvas.width = window.innerWidth;
@@ -24,19 +23,22 @@ function resetCanvas (e) {
   window.scrollTo(0,0); 
 }
 
-var last16thNote = 0;
-
 function draw() {
-  var currentNote = (audioContext.currentTime >= currentNoteStartTime ) ? current16thNote : last16thNote;
+  var currentNote = last16thNoteDrawn;
 
-  if (last16thNote != currentNote) {
+  // Check to make sure that the next note has actually started playing
+  // (Note that we're checking against the live audio clock here.)
+  if (audioContext.currentTime >= currentNoteStartTime )
+    currentNote = current16thNote;
+
+  if (last16thNoteDrawn != currentNote) {
     var x = Math.floor( canvas.width / 18 );
-    c.clearRect(0,0,canvas.width, canvas.height); 
+    canvasContext.clearRect(0,0,canvas.width, canvas.height); 
     for (var i=0; i<16; i++) {
-      c.fillStyle = ( currentNote == i ) ? ((currentNote%4 == 0)?"red":"blue") : "black";
-      c.fillRect( x * (i+1), x, x/2, x/2 );
+      canvasContext.fillStyle = ( currentNote == i ) ? ((currentNote%4 == 0)?"red":"blue") : "black";
+      canvasContext.fillRect( x * (i+1), x, x/2, x/2 );
     }
-    last16thNote = currentNote;
+    last16thNoteDrawn = currentNote;
 
   //c.fillText("hello", 0,0); 
   }
@@ -44,19 +46,18 @@ function draw() {
 }
 
 function setupCanvas() {
-
-  canvas = document.createElement( 'canvas' );
-  c = canvas.getContext( '2d' );
-  container = document.createElement( 'div' );
+  var   container = document.createElement( 'div' );
   container.className = "container";
 
+  canvas = document.createElement( 'canvas' );
+  canvasContext = canvas.getContext( '2d' );
   canvas.width = window.innerWidth; 
   canvas.height = window.innerHeight; 
   document.body.appendChild( container );
   container.appendChild(canvas);	
 
-  c.strokeStyle = "#ffffff";
-  c.lineWidth =2;
+  canvasContext.strokeStyle = "#ffffff";
+  canvasContext.lineWidth =2;
 }
 
 function init(){
