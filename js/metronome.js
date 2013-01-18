@@ -31,6 +31,23 @@ window.requestAnimFrame = (function(){
     };
 })();
 
+// Initialize a web worker to handle the scheduling interval
+function workerInit () {
+    self.addEventListener("message", function (e) {
+        if (e.data.action === "start") {
+            timer = setInterval(self.postMessage, e.data.interval);
+        } else if (e.data.action === "stop") {
+            clearInterval(timer);
+        }
+    });
+}
+
+var inline = "(" + workerInit.toString() + ")();";
+var url = window.URL || window.webkitURL;
+var blob = new Blob([inline]);
+var blobUrl = url.createObjectURL(blob);
+var timer = new Worker(blobUrl);
+
 function nextNote() {
     // Advance current note and time by a 16th note...
     var secondsPerBeat = 60.0 / tempo;	// Notice this picks up the CURRENT 
@@ -74,7 +91,6 @@ function scheduler() {
 		scheduleNote( current16thNote, nextNoteTime );
 		nextNote();
 	}
-	timerID = window.setTimeout( scheduler, lookahead );
 }
 
 function play() {
@@ -83,10 +99,16 @@ function play() {
 	if (isPlaying) { // start playing
 		current16thNote = 0;
 		nextNoteTime = audioContext.currentTime;
-		scheduler();	// kick off scheduling
-		return "stop";
-	} else {
-		window.clearTimeout( timerID );
+        // kick off scheduling
+        timer.postMessage({
+            action: "start",
+            interval: lookahead
+        });
+        return "stop";
+    } else {
+        timer.postMessage({
+            action: "stop"
+        });
 		return "play";
 	}
 }
@@ -141,6 +163,8 @@ function init(){
 	audioContext = new webkitAudioContext();
 
 	// if we wanted to load audio files, etc., this is where we should do it.
+
+    timer.addEventListener("message", scheduler);
 
     window.onorientationchange = resetCanvas;
     window.onresize = resetCanvas;
