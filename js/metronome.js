@@ -11,7 +11,7 @@ var scheduleAheadTime = 0.1;	// How far ahead to schedule audio (sec)
 var nextNoteTime = 0.0;		// when the next note is due.
 var noteResolution = 0;		// 0 == 16th, 1 == 8th, 2 == quarter note
 var noteLength = 0.05;		// length of "beep" (in seconds)
-var intervalID = 0;			// setInterval identifier.
+var timerID = 0;			// setInterval identifier.
 
 var canvas,       			// the canvas element
     canvasContext;  		// canvasContext is the canvas' context 2D
