@@ -62,9 +62,8 @@ function scheduleNote( beatNumber, time ) {
     else                        // other 16th notes = high pitch
         osc.frequency.value = 880.0;
 
-    // TODO: Once start()/stop() deploys on Safari and iOS, these should be changed.
-    osc.noteOn( time );
-    osc.noteOff( time + noteLength );
+    osc.start( time );
+    osc.stop( time + noteLength );
 }
 
 function scheduler() {
@@ -138,7 +137,12 @@ function init(){
     canvasContext.strokeStyle = "#ffffff";
     canvasContext.lineWidth = 2;
 
-    audioContext = new webkitAudioContext();
+    // NOTE: THIS RELIES ON THE MONKEYPATCH LIBRARY BEING LOADED FROM
+    // Http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js
+    // TO WORK ON CURRENT CHROME!!  But this means our code can be properly
+    // spec-compliant, and work on Chrome, Safari and Firefox.
+
+    audioContext = new AudioContext();
 
     // if we wanted to load audio files, etc., this is where we should do it.
 
