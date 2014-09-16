@@ -11,13 +11,13 @@ var scheduleAheadTime = 0.1;    // How far ahead to schedule audio (sec)
 var nextNoteTime = 0.0;     // when the next note is due.
 var noteResolution = 0;     // 0 == 16th, 1 == 8th, 2 == quarter note
 var noteLength = 0.05;      // length of "beep" (in seconds)
-var timerID = 0;            // setInterval identifier.
-
 var canvas,                 // the canvas element
     canvasContext;          // canvasContext is the canvas' context 2D
 var last16thNoteDrawn = -1; // the last "box" we drew on the screen
 var notesInQueue = [];      // the notes that have been put into the web audio,
                             // and may or may not have played yet. {note, time}
+var timerWorker = null;     // The Web Worker used to fire timer messages
+
 
 // First, let's shim the requestAnimationFrame API, with a setTimeout fallback
 window.requestAnimFrame = (function(){
@@ -73,7 +73,6 @@ function scheduler() {
         scheduleNote( current16thNote, nextNoteTime );
         nextNote();
     }
-    timerID = window.setTimeout( scheduler, lookahead );
 }
 
 function play() {
@@ -82,10 +81,10 @@ function play() {
     if (isPlaying) { // start playing
         current16thNote = 0;
         nextNoteTime = audioContext.currentTime;
-        scheduler();    // kick off scheduling
+        timerWorker.postMessage("start");
         return "stop";
     } else {
-        window.clearTimeout( timerID );
+        timerWorker.postMessage("stop");
         return "play";
     }
 }
@@ -150,6 +149,18 @@ function init(){
     window.onresize = resetCanvas;
 
     requestAnimFrame(draw);    // start the drawing loop.
+
+    timerWorker = new Worker("js/metronomeworker.js");
+
+    timerWorker.onmessage = function(e) {
+        if (e.data == "tick") {
+            // console.log("tick!");
+            scheduler();
+        }
+        else
+            console.log("message: " + e.data);
+    };
+    timerWorker.postMessage({"interval":lookahead});
 }
 
 window.addEventListener("load", init );
