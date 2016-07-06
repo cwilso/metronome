@@ -1,4 +1,5 @@
 var audioContext = null;
+var unlocked = false;
 var isPlaying = false;      // Are we currently playing?
 var startTime;              // The start time of the entire sequence.
 var current16thNote;        // What note is currently last scheduled?
@@ -76,6 +77,15 @@ function scheduler() {
 }
 
 function play() {
+    if (!unlocked) {
+      // play silent buffer to unlock the audio
+      var buffer = audioContext.createBuffer(1, 1, 22050);
+      var node = audioContext.createBufferSource();
+      node.buffer = buffer;
+      node.start(0);
+      unlocked = true;
+    }
+
     isPlaying = !isPlaying;
 
     if (isPlaying) { // start playing
