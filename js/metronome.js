@@ -53,15 +53,23 @@ function scheduleNote( beatNumber, time ) {
     if ( (noteResolution==0) && (beatNumber%4))
         return; // we're not playing non-quarter 8th notes
 
-    // create an oscillator
+    // create an oscillator and gainNode
     var osc = audioContext.createOscillator();
-    osc.connect( audioContext.destination );
+    var gainNode = audioContext.createGain();
+
+    // connect oscillator to gain node to speakers
+    osc.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
     if (beatNumber % 16 === 0)    // beat 0 == high pitch
-        osc.frequency.value = 880.0;
+        osc.frequency.value = 880.0; //A5
     else if (beatNumber % 4 === 0 )    // quarter notes = medium pitch
-        osc.frequency.value = 440.0;
+        osc.frequency.value = 440.0; //440.0 Hertz is A4 on the piano
     else                        // other 16th notes = low pitch
         osc.frequency.value = 220.0;
+
+    // increase volume for lower pitches
+    gainNode.gain.value = gainNode.gain.value*(880/osc.frequency.value);
 
     osc.start( time );
     osc.stop( time + noteLength );
