@@ -50,7 +50,7 @@ function scheduleNote( beatNumber, time ) {
 
     if ( (noteResolution==1) && (beatNumber%2))
         return; // we're not playing non-8th 16th notes
-    if ( (noteResolution==2) && (beatNumber%4))
+    if ( (noteResolution==) && (beatNumber%4))
         return; // we're not playing non-quarter 8th notes
 
     // create an oscillator
