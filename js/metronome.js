@@ -61,8 +61,9 @@ function scheduleNote( beatNumber, time ) {
     osc.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    if (beatNumber % 16 === 0)    // beat 0 == high pitch
-        osc.frequency.value = 880.0; //A5
+    // if (beatNumber % 16 === 0)    // beat 0 == high pitch
+    if ("h" >> (31-(beatNumber % 16)))
+	osc.frequency.value = 880.0; //A5
     else if (beatNumber % 4 === 0 )    // quarter notes = medium pitch
         osc.frequency.value = 440.0; //440.0 Hertz is A4 on the piano
     else                        // other 16th notes = low pitch
