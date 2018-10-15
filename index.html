@@ -9,7 +9,8 @@
     <script src="js/metronome.js"></script>
   </head>
   <body>
-    <a href="https://github.com/cwilso/metronome" style="position: absolute; top: -5px; right: 15px;">Fork me on GitHub</a>
+    <a href="https://github.com/zoeweinberg/metronome" style="position: absolute; top: -5px; right: 15px;">Zoe's fork on GitHub</a>
+    <a href="https://github.com/cwilso/metronome" style="position: absolute; top: -5px; right: 15px;">Fork the original branch on GitHub</a>
     <div id="controls">
       <div><a class="play" onclick="this.innerText = play();">play</a></div>
       <div id="tempoBox">Tempo: <span id="showTempo">120</span>BPM <input id="tempo" type="range" min="30.0" max="160.0" step="1" value="120" style="height: 20px; width: 200px" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;"></div>
