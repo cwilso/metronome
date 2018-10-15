@@ -4,6 +4,7 @@ This application shows how to use a collaboration between a setTimeout scheduler
 
 Check it out, feel free to submit issues or requests, fork, submit pull requests, etc.
 
-The live app is at http://webaudiodemos.appspot.com/metronome/index.html.
+Zoe's demo: https://zoeweinberg.github.io/metronome/
+The original live app is at http://webaudiodemos.appspot.com/metronome/index.html.
 
 -Chris
