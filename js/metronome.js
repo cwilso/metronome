@@ -10,7 +10,7 @@ var scheduleAheadTime = 0.1;    // How far ahead to schedule audio (sec)
                             // This is calculated from lookahead, and overlaps 
                             // with next interval (in case the timer is late)
 var nextNoteTime = 0.0;     // when the next note is due.
-var noteResolution = 0;     // 2 == 16th, 1 == 8th, 0 == quarter note
+var noteResolution = 0;     // 0 == 16th, 1 == 8th, 2 == quarter note
 var noteLength = 0.05;      // length of "beep" (in seconds)
 var canvas,                 // the canvas element
     canvasContext;          // canvasContext is the canvas' context 2D
@@ -38,19 +38,19 @@ function nextNote() {
                                           // tempo value to calculate beat length.
     nextNoteTime += 0.25 * secondsPerBeat;    // Add beat length to last beat time
 
-    current16thNote++;    // Advance the beat number, wrap to zero
-    if (current16thNote == 16) {
-        current16thNote = 0;
-    }
+    current16thNote++;    // Advance the beat number, do NOT wrap to zero
+    //if (current16thNote == 16) {
+    //    current16thNote = 0;
+    //}
 }
 
 function scheduleNote( beatNumber, time ) {
     // push the note on the queue, even if we're not playing.
-    notesInQueue.push( { note: beatNumber, time: time } );
+    notesInQueue.push( { note: (beatNumber % 16), time: time } );
 
     if ( (noteResolution==1) && (beatNumber%2))
         return; // we're not playing non-8th 16th notes
-    if ( (noteResolution==0) && (beatNumber%4))
+    if ( (noteResolution==2) && (beatNumber%4))
         return; // we're not playing non-quarter 8th notes
 
     // create an oscillator and gainNode
@@ -62,7 +62,10 @@ function scheduleNote( beatNumber, time ) {
     gainNode.connect(audioContext.destination);
     
     // if (beatNumber % 16 === 0)    // beat 0 == high pitch
-    if ("h" >> (31-(beatNumber % 16)))
+    //console.log(beatNumber);
+    var bit = 1 & ("hello".charCodeAt(0) >> (31-(beatNumber%32)));
+    console.log(bit);
+    if (bit)
 	osc.frequency.value = 880.0; //A5
     else if (beatNumber % 4 === 0 )    // quarter notes = medium pitch
         osc.frequency.value = 440.0; //440.0 Hertz is A4 on the piano
