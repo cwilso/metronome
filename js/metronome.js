@@ -61,9 +61,11 @@ function scheduleNote( beatNumber, time ) {
     osc.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    // if (beatNumber % 16 === 0)    // beat 0 == high pitch
-    //console.log(beatNumber);
-    var bit = 1 & ("hello".charCodeAt(0) >> (31-(beatNumber%32)));
+    if (beatNumber % 16 === 0) {   // beat 0 == high pitch
+	console.log("beatNumber % 16 === 0");
+    }
+    // var bit = 1 & ("hello".charCodeAt(0) >> (31-(beatNumber%32))); //GSB 
+    var bit = 1 & ("hello".charCodeAt(beatNumber/32) >> (beatNumber%32)); //LSB first
     console.log(bit);
     if (bit)
 	osc.frequency.value = 880.0; //A5
