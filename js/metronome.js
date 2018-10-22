@@ -66,12 +66,19 @@ function scheduleNote( beatNumber, time ) {
     // connect oscillator to gain node to speakers
     osc.connect(gainNode);
     gainNode.connect(audioContext.destination);
+
+    // var bit = 1 & ("hello".charCodeAt(0) >> (31-(beatNumber%32))); //GSB 
+    // var bit = 1 & ("hello".charCodeAt(beatNumber/32) >> (beatNumber%32)); //LSB first
+    var thisCharacter = string.charAt(beatNumber/32);
+    var bit = 1 & ((string.charCodeAt(beatNumber/32)) >> (beatNumber%32)); //LSB first
     
+    if (beatNumber % 32 === 0) {   // beat 0 == high pitch
+	console.log("beatNumber % 32 === 0");
+	console.log("thisCharacter is '" + thisCharacter + "' ");
+    }
     if (beatNumber % 16 === 0) {   // beat 0 == high pitch
 	console.log("beatNumber % 16 === 0");
     }
-    // var bit = 1 & ("hello".charCodeAt(0) >> (31-(beatNumber%32))); //GSB 
-    var bit = 1 & ("hello".charCodeAt(beatNumber/32) >> (beatNumber%32)); //LSB first
     console.log(bit);
     if (bit)
 	osc.frequency.value = 880.0; //A5
