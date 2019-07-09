@@ -45,8 +45,7 @@ function readTextFile(file)
     rawFile.send(null);
 }
 //And specify file:// in your filename:
-
-readTextFile("file://./to-be-read.txt");
+//readTextFile("file://./to-be-read.txt");
 //--Majid Laissi
 //end of read from file
 
