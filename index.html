@@ -31,10 +31,10 @@
 	  node.innerText = text;
 	  console.log(reader.result.substring(0, 200));
       };
-      reader.readAsText(input.files[0]);
+      reader.readAsBinaryString(input.files[0]);
   };
 </script>
-  <input type='file' accept='text/plain' onchange='openFile(event)'><br>
+  <input type='file' onchange='openFile(event)'><br>
   <div id='output'>
     ...
         </div>
