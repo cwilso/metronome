@@ -20,6 +20,26 @@ var notesInQueue = [];      // the notes that have been put into the web audio,
 var timerWorker = null;     // The Web Worker used to fire timer messages
 
 
+// new section: making JS do the JS things, rather than mixing live JS into the HTML code
+
+const playBtn = document.querySelector(`button.play`);
+playBtn.addEventListener(`click`, () => {
+  playBtn.innerText = play();
+});
+
+const tempoLabel = document.getElementById('showTempo');
+const tempoInput = document.querySelector(`input.tempo`);
+tempo.addEventListener(`input`, () => {
+  tempo = parseFloat(event.target.value);
+  tempoLabel.innerText = tempo;
+});
+
+const intervalPicker = document.querySelector(`select.resolution`);
+intervalPicker.addEventListener(`change`, () => {
+  noteResolution = intervalPicker.selectedIndex;
+});
+                                                                   
+
 // there was a requestAnimationFrame shim here. 2022 does not need that.
 
 function nextNote() {
@@ -161,5 +181,6 @@ function init(){
     timerWorker.postMessage({"interval":lookahead});
 }
 
-window.addEventListener("load", init );
+// this had a window.load call, which was made obsolete by the "defer" script attribute
 
+init();
