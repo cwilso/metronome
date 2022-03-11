@@ -2,32 +2,48 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width user-scalable=yes">
+    <meta name="viewport" content="width=device-width user-scalable=yes" />
     <title>Metronome</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main.css" />
     <script src="js/metronome.js" async defer></script>
   </head>
   <body>
-
     <div id="controls">
       <div><button class="play">play</button></div>
 
       <div id="tempoBox">
         Tempo: <label class="tempo">120</label>BPM
-        <input class="tempo" type="range" min="30" max="300" step="1" value="125">
+        <input
+          class="tempo"
+          type="range"
+          min="30"
+          max="300"
+          step="1"
+          value="125"
+        />
       </div>
-      
+
       <div>
-        Resolution: <select class="resolution">
-          <option value="1">1/4</option> <!-- making "the whole measure" be a whole note was the biggest mistake in western music notation -->
-          <option value="2">1/8</option>
-          <option value="4">1/16</option>
-          <option value="8">1/32</option>
-          <option value="16">1/64</option>
-          <option value="32">1/128</option>
+        Resolution:
+        <select class="resolution">
+          <option value="1">1/4</option>
+          <!-- making "the whole measure" be a whole note was the biggest mistake in western music notation -->
+          <option value="0.5">1/8</option>
+          <option value="0.25">1/16</option>
+          <option value="0.125">1/32</option>
+          <option value="0.0625">1/64</option>
+          <option value="0.03125">1/128</option>
         </select>
       </div>
     </div>
 
+    <canvas id="cvs"></canvas>
+
+    <div>
+      <p>
+        Average drift (<span class="samples">20</span>):
+        <span class="drift">00.00</span>ms
+      </p>
+    </div>
   </body>
 </html>
