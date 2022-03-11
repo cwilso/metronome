@@ -29,7 +29,7 @@ playBtn.addEventListener(`click`, () => {
 
 const tempoLabel = document.getElementById('showTempo');
 const tempoInput = document.querySelector(`input.tempo`);
-tempo.addEventListener(`input`, () => {
+tempoInput.addEventListener(`input`, () => {
   tempo = parseFloat(event.target.value);
   tempoLabel.innerText = tempo;
 });
