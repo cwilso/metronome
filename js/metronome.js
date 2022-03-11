@@ -140,7 +140,7 @@ function draw() {
     }
 
     // set up to draw again
-    requestAnimFrame(draw);
+    requestAnimationFrame(draw);
 }
 
 function init(){
@@ -166,7 +166,7 @@ function init(){
     window.onorientationchange = resetCanvas;
     window.onresize = resetCanvas;
 
-    requestAnimFrame(draw);    // start the drawing loop.
+    requestAnimationFrame(draw);    // start the drawing loop.
 
     timerWorker = new Worker("js/metronomeworker.js");
 
