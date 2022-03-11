@@ -20,17 +20,7 @@ var notesInQueue = [];      // the notes that have been put into the web audio,
 var timerWorker = null;     // The Web Worker used to fire timer messages
 
 
-// First, let's shim the requestAnimationFrame API, with a setTimeout fallback
-window.requestAnimFrame = (function(){
-    return  window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function( callback ){
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
+// there was a requestAnimationFrame shim here. 2022 does not need that.
 
 function nextNote() {
     // Advance current note and time by a 16th note...
@@ -146,10 +136,8 @@ function init(){
     canvasContext.strokeStyle = "#ffffff";
     canvasContext.lineWidth = 2;
 
-    // NOTE: THIS RELIES ON THE MONKEYPATCH LIBRARY BEING LOADED FROM
-    // Http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js
-    // TO WORK ON CURRENT CHROME!!  But this means our code can be properly
-    // spec-compliant, and work on Chrome, Safari and Firefox.
+    // this had a note around a library that was needed for audio context support
+    // in chrome, which in 2022 is entirely unnecessary anymore.
 
     audioContext = new AudioContext();
 
