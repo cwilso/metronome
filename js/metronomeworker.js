@@ -1,5 +1,5 @@
 let timer;
-let interval = 4;
+let interval = 1;
 const TICK = { tick: true };
 
 onmessage = function (e) {
