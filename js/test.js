@@ -6,8 +6,8 @@ const timerWorker = new Worker("js/andback.js");
 
 timerWorker.onmessage = (e) => {
   timerWorker.postMessage(MORE);
-  now = performance.now();
-  if (now - last > 0) {
+  now = Date.now();
+  if (now - last >= 1) {
     last = now;
     a = a + 1;
   }
@@ -15,7 +15,7 @@ timerWorker.onmessage = (e) => {
 
 // start
 timerWorker.postMessage({ start: true });
-last = performance.now();
+last = Date.now();
 
 setTimeout(() => {
   timerWorker.postMessage({ stop: true });
