@@ -5,6 +5,7 @@ let last = 0;
 let now;
 const MORE = { more: true };
 const timerWorker = new Worker("js/andback.js");
+let secondary;
 
 timerWorker.onmessage = (e) => {
   // perform some light computation
@@ -33,6 +34,7 @@ let tryIncrement = () => {
   timerWorker.postMessage({ start: true });
   setTimeout(() => {
     timerWorker.postMessage({ stop: true });
+    clearInterval(secondary);
     document.querySelector(`.drift`).textContent = a;
     console.log(intervals);
     console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(...intervals));
@@ -41,5 +43,5 @@ let tryIncrement = () => {
   // We also run a setInterval, as a kind of "super resolution" timer,
   // using two independent mechanisms to ensure that if one of them gets
   // stuck, the other still kicks in (hopefully)
-  setInterval(tryIncrement, 1);
+  secondary = setInterval(tryIncrement, 1);
 })(5 * SECONDS);
