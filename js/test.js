@@ -71,7 +71,7 @@ let intervals = [
   // [8] is 1/32
   // [16] is 1/64
 ];
-let MAX_DIVISION = 2;
+let MAX_DIVISION = 8;
 let subdivisions = MAX_DIVISION - 2;
 for (let i = 0; i <= subdivisions; i++) {
   intervals.push(60000 / (BPM * (i + 2)));
