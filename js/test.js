@@ -12,22 +12,27 @@ timerWorker.onmessage = (e) => {
   timerWorker.postMessage(MORE);
 };
 
-async function tryIncrement(now) {
-  const diff = now - last;
-  if (diff >= 1) {
-    last = now;
-    a = a + 1;
-    intervals.push(diff);
-  }
-}  
+let tryIncrement = async(now) => {
+  // initial update needs to set `last`
+  last = Date.now();
+  a = a + 1;
+  // subsequent updates don't.
+  tryIncrement = async(now) => {
+    const diff = now - last;
+    if (diff >= 1) {
+      last = now;
+      a = a + 1;
+      intervals.push(diff);
+    }
+  };
+}
 
-// start
-timerWorker.postMessage({ start: true });
-last = Date.now();
-
-setTimeout(() => {
-  timerWorker.postMessage({ stop: true });
-  document.querySelector(`.drift`).textContent = a;
-  console.log(intervals);
-  console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(intervals));
-}, 1000);
+(function run(duration) {
+  timerWorker.postMessage({ start: true });
+  setTimeout(() => {
+    timerWorker.postMessage({ stop: true });
+    document.querySelector(`.drift`).textContent = a;
+    console.log(intervals);
+    console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(intervals));
+  }, duration);
+})(1000);
