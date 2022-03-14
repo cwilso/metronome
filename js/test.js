@@ -37,4 +37,9 @@ let tryIncrement = () => {
     console.log(intervals);
     console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(...intervals));
   }, duration);
+  
+  // We also run a setInterval, as a kind of "super resolution" timer,
+  // using two independent mechanisms to ensure that if one of them gets
+  // stuck, the other still kicks in (hopefully)
+  setInterval(tryIncrement, 1);
 })(5 * SECONDS);
