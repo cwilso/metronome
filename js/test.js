@@ -1,4 +1,5 @@
 let a = 0;
+const SECONDS = 1000; // ms
 const intervals = []
 let last = 0;
 let now;
@@ -36,4 +37,4 @@ let tryIncrement = () => {
     console.log(intervals);
     console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(...intervals));
   }, duration);
-})(1000);
+})(5 * SECONDS);
