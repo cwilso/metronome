@@ -18,6 +18,7 @@ let tryIncrement = () => {
   // initial update needs to set `last`
   last = performance.now();
   a = a + 1;
+  
   // subsequent updates don't.
   tryIncrement = () => {
     const now = performance.now();
@@ -28,10 +29,16 @@ let tryIncrement = () => {
       intervals.push(diff);
     }
   };
+
+  // We also run a setInterval, as a kind of "super resolution" timer,
+  // using two independent mechanisms to ensure that if one of them gets
+  // stuck, the other still kicks in (hopefully)
+  secondary = setInterval(tryIncrement, 1);
 }
 
 (function run(duration) {
   timerWorker.postMessage({ start: true });
+  
   setTimeout(() => {
     timerWorker.postMessage({ stop: true });
     clearInterval(secondary);
@@ -39,9 +46,5 @@ let tryIncrement = () => {
     console.log(intervals);
     console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(...intervals));
   }, duration);
-  
-  // We also run a setInterval, as a kind of "super resolution" timer,
-  // using two independent mechanisms to ensure that if one of them gets
-  // stuck, the other still kicks in (hopefully)
-  secondary = setInterval(tryIncrement, 1);
+
 })(5 * SECONDS);
