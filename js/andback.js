@@ -5,5 +5,5 @@ let running = false;
 onmessage = function (e) {
     if (e.data.start) running = true;
     if (e.data.stop) running = false;
-    if (running) setTimeout(() => postMessage(TICK), 1);
+    if (running) postMessage(TICK);
 }
