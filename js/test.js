@@ -115,13 +115,6 @@ timerWorker.onmessage = (e) => {
 };
 
 let tryIncrement = () => {
-  // initial update needs to set `last`
-  startTime = last = performance.now();
-  tryIncrement = fullTryIncrement;
-};
-// subsequent updates don't.
-
-const fullTryIncrement = () => {
   const now = performance.now();
   const diff = now - last;
 
@@ -137,17 +130,18 @@ const fullTryIncrement = () => {
 
     const m = (now / intervals[0]) | 0;
     const mi = now - m * intervals[0];
-  
+
     const q = (mi / intervals[1]) | 0;
     const qi = mi - q * intervals[1];
-  
+
     tickData = intervals.map((v) => (qi / v) | 0);
     tickData[0] = m;
     tickData[1] = q;
   }
 };
 
-(function run(duration) {
+function run(duration) {
+  startTime = last = performance.now();
   timerWorker.postMessage({ start: true });
 
   setTimeout(() => {
@@ -192,4 +186,6 @@ const fullTryIncrement = () => {
     });
     requestAnimationFrame(updateFrame);
   })();
-})(RUNTIME_MS);
+}
+
+document.querySelector(`button.play`).addEventListener(`click`, () => run(RUNTIME_MS));

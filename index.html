@@ -11,6 +11,7 @@
     <div id="controls">
       <div><button class="play">play</button></div>
 
+      <!--
       <div id="tempoBox">
         Tempo: <label class="tempo">120</label>BPM
         <input
@@ -27,7 +28,6 @@
         Resolution:
         <select class="resolution">
           <option value="1">1/4</option>
-          <!-- making "the whole measure" be a whole note was the biggest mistake in western music notation -->
           <option value="0.5">1/8</option>
           <option value="0.25">1/16</option>
           <option value="0.125">1/32</option>
@@ -35,11 +35,13 @@
           <option value="0.03125">1/128</option>
         </select>
       </div>
-    </div>
+    --></div>
 
     <div>
       <p>
-        Total number of ticks processed after <span class="runtime"></span> seconds: <span class="tick-count">(...running...)</span>
+        Total number of ticks processed after
+        <span class="runtime"></span> seconds:
+        <span class="tick-count">(...running...)</span>
       </p>
     </div>
 
