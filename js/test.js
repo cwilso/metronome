@@ -5,12 +5,14 @@ const MORE = { more: true };
 const timerWorker = new Worker("js/andback.js");
 
 timerWorker.onmessage = (e) => {
-  timerWorker.postMessage(MORE);
+  // perform some light computation
   now = Date.now();
   if (now - last >= 1) {
     last = now;
     a = a + 1;
   }
+  // then immediately tell the worker to round-trip a tick
+  timerWorker.postMessage(MORE);
 };
 
 // start
