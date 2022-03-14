@@ -7,17 +7,18 @@ const timerWorker = new Worker("js/andback.js");
 
 timerWorker.onmessage = (e) => {
   // perform some light computation
-  tryIncrement(performance.now());
+  tryIncrement();
   // then immediately tell the worker to round-trip a tick
   timerWorker.postMessage(MORE);
 };
 
-let tryIncrement = async(now) => {
+let tryIncrement = () => {
   // initial update needs to set `last`
   last = performance.now();
   a = a + 1;
   // subsequent updates don't.
-  tryIncrement = async(now) => {
+  tryIncrement = () => {
+    const now = performance.now();
     const diff = now - last;
     if (diff >= 1) {
       last = now;
