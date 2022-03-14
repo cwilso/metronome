@@ -1,11 +1,108 @@
-let a = 0;
-const SECONDS = 1000; // ms
-const intervals = []
-let last = 0;
-let now;
+const audioContext = new AudioContext();
+let beepDuration = 0.05; // length of "beep" (in seconds)
+
+let unlocked = false;
+if (!unlocked) {
+  // play silent buffer to unlock the audio
+  const node = audioContext.createBufferSource();
+  node.buffer = audioContext.createBuffer(1, 1, 22050);
+  node.start(0);
+  unlocked = true;
+}
+
+// =============================
+
+const beeps = {};
+
+/**
+ * ...docs go here...
+ */
+(function setupBeeps() {
+  const routeAudio = (Hz) => {
+    const volume = audioContext.createGain();
+    volume.gain.setValueAtTime(0, audioContext.currentTime);
+    volume.connect(audioContext.destination);
+    const osc = audioContext.createOscillator();
+    osc.frequency.value = Hz;
+    osc.connect(volume);
+    osc.start();
+    return volume.gain;
+  };
+
+  [220, 440, 880].forEach((Hz) => {
+    const master = routeAudio(Hz);
+    beeps[Hz] = {
+      play: () => {
+        const when = audioContext.currentTime;
+        master.setTargetAtTime(1, when, 0.05);
+        master.setTargetAtTime(0, when + beepDuration, 0.05);
+      },
+    };
+  });
+})();
+
+function getDifference(arr1, arr2) {
+  for (let i = 0, e = arr1.length; i < e; i++) {
+    if (arr1[i] !== arr2[i]) return i;
+  }
+  return -1;
+}
+
+// ===============================
+
+let a = 0,
+  last = 0,
+  now,
+  bad = 0;
+const RUNTIME = 10 * 1000; // ms
+const timerIntervals = [];
 const MORE = { more: true };
 const timerWorker = new Worker("js/andback.js");
-let secondary;
+
+// Let's set up some musical timing values
+let BPM = 125;
+let intervals = [
+  // measure
+  (4 * 60000) / BPM,
+  // quarter
+  60000 / BPM,
+  // [2] is 1/8
+  // [4] is 1/16
+  // [8] is 1/32
+  // [16] is 1/64
+];
+let MAX_DIVISION = 2;
+let subdivisions = MAX_DIVISION - 2;
+for (let i = 0; i <= subdivisions; i++) {
+  intervals.push(60000 / (BPM * (i + 2)));
+}
+let smallest = intervals[intervals.length - 1];
+let startTime;
+let tickData = intervals.map((v) => 0);
+let prevTickData = intervals.map((v) => -1);
+
+const create = (tag) => document.createElement(tag);
+
+(function buildDivisions() {
+  const divisions = document.querySelector(`.divisions`);
+  intervals.forEach((_, i) => {
+    const ol = create(`ol`);
+    ol.classList.add(`d${i}`);
+    let rows = 4;
+    if (i === 0) {
+      rows = 16;
+    } else if (i > 1) {
+      rows = 4 * i;
+    }
+    for (let j = 0; j < rows; j++) {
+      const li = create(`li`);
+      li.textContent = `x`;
+      ol.append(li);
+    }
+
+    divisions.append(ol);
+  });
+})();
 
 timerWorker.onmessage = (e) => {
   // perform some light computation
@@ -16,35 +113,80 @@ timerWorker.onmessage = (e) => {
 
 let tryIncrement = () => {
   // initial update needs to set `last`
-  last = performance.now();
-  a = a + 1;
-  
-  // subsequent updates don't.
-  tryIncrement = () => {
-    const now = performance.now();
-    const diff = now - last;
-    if (diff >= 1) {
-      last = now;
-      a = a + 1;
-      intervals.push(diff);
-    }
-  };
+  startTime = last = performance.now();
+  tryIncrement = fullTryIncrement;
+};
+// subsequent updates don't.
 
-  // We also run a setInterval, as a kind of "super resolution" timer,
-  // using two independent mechanisms to ensure that if one of them gets
-  // stuck, the other still kicks in (hopefully)
-  secondary = setInterval(tryIncrement, 1);
-}
+const fullTryIncrement = () => {
+  const now = performance.now();
+  const diff = now - last;
+
+  if (diff >= 1) {
+    last = now;
+    a = a + 1;
+    timerIntervals.push(diff);
+
+    if (diff > smallest) {
+      bad = bad + 1;
+      console.log(diff);
+    }
+
+    const m = (now / intervals[0]) | 0;
+    const mi = now - m * intervals[0];
+  
+    const q = (mi / intervals[1]) | 0;
+    const qi = mi - q * intervals[1];
+  
+    tickData = intervals.map((v) => (qi / v) | 0);
+    tickData[0] = m;
+    tickData[1] = q;
+  }
+};
 
 (function run(duration) {
   timerWorker.postMessage({ start: true });
-  
+
   setTimeout(() => {
     timerWorker.postMessage({ stop: true });
-    clearInterval(secondary);
     document.querySelector(`.drift`).textContent = a;
-    console.log(intervals);
-    console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(...intervals));
+    console.log(timerIntervals);
+    console.log(tickData);
+    console.log(
+      Math.min(...timerIntervals),
+      timerIntervals.reduce((t, v) => t + v) / timerIntervals.length,
+      Math.max(...timerIntervals),
+      bad
+    );
   }, duration);
 
-})(5 * SECONDS);
+  // and let's update the UI
+  (async function updateFrame() {
+    const pos = getDifference(tickData, prevTickData);
+
+    // if nothing changed, do nothing.
+    if (pos === -1) {
+      return requestAnimationFrame(updateFrame);
+    }
+
+    prevTickData = tickData;
+
+    // measure and quarter
+    if (pos === 0) beeps[220].play();
+    if (pos === 1) beeps[440].play();
+
+    // "something else"
+    if (pos === 2) beeps[880].play();
+
+    document
+      .querySelectorAll(`.highlight`)
+      .forEach((e) => e.classList.remove(`highlight`));
+    const q = tickData[1];
+    tickData.forEach((v, i) => {
+      const n = i > 1 ? `${q * i + v + 1}` : `${v + 1}`;
+      const qs = `.d${i} li:nth-child(${n})`;
+      document.querySelector(qs)?.classList.add(`highlight`);
+    });
+    requestAnimationFrame(updateFrame);
+  })();
+})(RUNTIME);

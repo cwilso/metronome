@@ -59,10 +59,19 @@ body, html {
     height: 100%;
     position: relative;
 }
+
 body {
     overflow: auto;
 }
 
 canvas {
   height: 200px;
+}
+
+.highlight {
+	background: red;
+}
+
+.divisions {
+	display: flex;
 }
