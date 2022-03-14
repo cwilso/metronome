@@ -54,7 +54,10 @@ let a = 0,
   last = 0,
   now,
   bad = 0;
-const RUNTIME = 10 * 1000; // ms
+const RUNTIME = 10;
+document.querySelector(`.runtime`).textContent = RUNTIME;
+const RUNTIME_MS = RUNTIME * 1000;
+
 const timerIntervals = [];
 const MORE = { more: true };
 const timerWorker = new Worker("js/andback.js");
@@ -149,7 +152,7 @@ const fullTryIncrement = () => {
 
   setTimeout(() => {
     timerWorker.postMessage({ stop: true });
-    document.querySelector(`.drift`).textContent = a;
+    document.querySelector(`.tick-count`).textContent = a;
     console.log(timerIntervals);
     console.log(tickData);
     console.log(
@@ -189,4 +192,4 @@ const fullTryIncrement = () => {
     });
     requestAnimationFrame(updateFrame);
   })();
-})(RUNTIME);
+})(RUNTIME_MS);
