@@ -1,23 +1,12 @@
-const audioContext = new AudioContext();
+let audioContext;
 let beepDuration = 0.05; // length of "beep" (in seconds)
-
 let unlocked = false;
-if (!unlocked) {
-  // play silent buffer to unlock the audio
-  const node = audioContext.createBufferSource();
-  node.buffer = audioContext.createBuffer(1, 1, 22050);
-  node.start(0);
-  unlocked = true;
-}
 
 // =============================
 
 const beeps = {};
 
-/**
- * ...docs go here...
- */
-(function setupBeeps() {
+function setupBeeps() {
   const routeAudio = (Hz) => {
     const volume = audioContext.createGain();
     volume.gain.setValueAtTime(0, audioContext.currentTime);
@@ -39,7 +28,7 @@ const beeps = {};
       },
     };
   });
-})();
+};
 
 function getDifference(arr1, arr2) {
   for (let i = 0, e = arr1.length; i < e; i++) {
@@ -86,7 +75,7 @@ let prevTickData = intervals.map((v) => -1);
 
 const create = (tag) => document.createElement(tag);
 
-(function buildDivisions() {
+function buildDivisions() {
   const divisions = document.querySelector(`.divisions`);
   intervals.forEach((_, i) => {
     const ol = create(`ol`);
@@ -105,7 +94,7 @@ const create = (tag) => document.createElement(tag);
 
     divisions.append(ol);
   });
-})();
+}
 
 timerWorker.onmessage = (e) => {
   // perform some light computation
@@ -188,4 +177,17 @@ function run(duration) {
   })();
 }
 
-document.querySelector(`button.play`).addEventListener(`click`, () => run(RUNTIME_MS));
+document.querySelector(`button.play`).addEventListener(`click`, () => {
+  audioContext  = new AudioContext();
+  if (!unlocked) {
+    // play silent buffer to unlock the audio
+    const node = audioContext.createBufferSource();
+    node.buffer = audioContext.createBuffer(1, 1, 22050);
+    node.start(0);
+    unlocked = true;
+  }
+  setupBeeps();  
+  run(RUNTIME_MS);
+});
+
+buildDivisions();
