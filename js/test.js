@@ -1,4 +1,5 @@
 let a = 0;
+const intervals = []
 let last = 0;
 let now;
 const MORE = { more: true };
@@ -12,9 +13,11 @@ timerWorker.onmessage = (e) => {
 };
 
 async function tryIncrement(now) {
-  if (now - last >= 1) {
+  const diff = now - last;
+  if (diff >= 1) {
     last = now;
     a = a + 1;
+    intervals.push(diff);
   }
 }  
 
@@ -24,6 +27,7 @@ last = Date.now();
 
 setTimeout(() => {
   timerWorker.postMessage({ stop: true });
-  console.log(a);
   document.querySelector(`.drift`).textContent = a;
+  console.log(intervals);
+  console.log(Math.min(...intervals), intervals.reduce((t,v) => t+v)/intervals.length, Math.max(intervals));
 }, 1000);
