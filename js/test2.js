@@ -78,7 +78,7 @@ timerWorker.onmessage = (e) => {
 
   if (updateTickData(tickData) === undefined) return;
 
-//   console.log(tickData);
+  // console.log(tickData);
 
   document
     .querySelectorAll(`.highlight`)

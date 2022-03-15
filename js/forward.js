@@ -1,14 +1,11 @@
-let a = 0,
+const loopWorker = new Worker("./andback.js");
+const MORE = { more: true };
+const timerIntervals = [];
+let startTime, BPM, intervals, smallest, tickData, prevTickData;
+let ticks = 0,
   last = 0,
   now,
   bad = 0;
-
-const MORE = { more: true };
-const loopWorker = new Worker("./andback.js");
-const timerIntervals = [];
-
-let startTime, BPM, intervals, smallest;
-let tickData, prevTickData;
 
 // Round-tripping the postMessage mechanism.
 loopWorker.onmessage = (e) => {
@@ -36,21 +33,21 @@ function setBPM(bpm = 125, MAX_DIVISION = 8) {
 
 function tryIncrement() {
   const now = performance.now();
+  const runtime = now - startTime;
   const diff = now - last;
 
   if (diff >= 1) {
     // console.log(`bump`);
     last = now;
-    a = a + 1;
+    ticks = ticks + 1;
     timerIntervals.push(diff);
 
     if (diff > smallest) {
       bad = bad + 1;
-      console.log(diff);
     }
 
-    const m = (now / intervals[0]) | 0;
-    const mi = now - m * intervals[0];
+    const m = (runtime / intervals[0]) | 0;
+    const mi = runtime - m * intervals[0];
 
     const q = (mi / intervals[1]) | 0;
     const qi = mi - q * intervals[1];
@@ -82,6 +79,7 @@ onmessage = (e) => {
 
   if (start) {
     // console.log(`starting loop`);
+    ticks = 0;
     startTime = last = performance.now();
     tickData = intervals.map((v) => 0);
     prevTickData = intervals.map((v) => -1);
@@ -91,17 +89,6 @@ onmessage = (e) => {
   if (stop) {
     // console.log(`halting loop`);
     loopWorker.postMessage({ stop });
-    postMessage({ ticks: a, bad});
-
-    /*
-    console.log(timerIntervals);
-    console.log(tickData);
-    console.log(
-      Math.min(...timerIntervals),
-      timerIntervals.reduce((t, v) => t + v) / timerIntervals.length,
-      Math.max(...timerIntervals),
-      bad
-    );
-    */
+    postMessage({ ticks: ticks, bad });
   }
 };
