@@ -1,1 +1,3 @@
-This is a fork of cwilso/metronome, updated to see how well it deals with the kind of note resolution required for "real" music (where you need at least 64th support due to triplets, quintuplets, and runs)
+This started life as a fork of cwilso/metronome, but turned into "let's use the postmessage mechanism to set up a timing loop instead".
+
+https://pomax.github.io/metronome
