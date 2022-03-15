@@ -12,10 +12,15 @@ body {
   overflow: auto;
 }
 
-.highlight {
+.divisions li.highlight {
   background: red;
 }
 
 .divisions {
   display: flex;
+}
+
+.divisions .clickable:hover {
+  background: #4080F020 !important;
+  cursor: pointer;
 }

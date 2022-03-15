@@ -1,12 +1,18 @@
 let audioContext;
-let beepDuration = 0.05; // length of "beep" (in seconds)
 let unlocked = false;
 
-const timerWorker = new Worker("js/forward.js");
-let tickData, prevTickData;
-let startTime;
-
 const beeps = {};
+let beepDuration = 0.05; // length of "beep" (in seconds)
+let activeDivision = 2;
+
+const timerWorker = new Worker("js/forward.js");
+let tickData, prevTickData, startTime;
+
+// =========== functions ===========
+
+function create(tag) {
+  return document.createElement(tag);
+}
 
 function setupBeeps() {
   const routeAudio = (Hz) => {
@@ -39,13 +45,15 @@ function getDifference(arr1, arr2) {
   return -1;
 }
 
-const create = (tag) => document.createElement(tag);
-
 function buildDivisions(intervals) {
   const divisions = document.querySelector(`.divisions`);
   intervals.forEach((_, i) => {
     const ol = create(`ol`);
     ol.classList.add(`d${i}`);
+    if (i >= 2) {
+      ol.addEventListener(`click`, () => (activeDivision = i));
+      ol.classList.add(`clickable`);
+    }
     let rows = 4;
     if (i === 0) {
       rows = 16;
@@ -62,6 +70,23 @@ function buildDivisions(intervals) {
   });
 }
 
+function updateTickData(tickData) {
+  const pos = getDifference(tickData, prevTickData);
+
+  // if nothing changed, do nothing.
+  if (pos === -1) return;
+
+  prevTickData = tickData;
+
+  // measure, quarter, and chosen division
+  if (pos === 0) beeps[220].play();
+  else if (pos === 1) beeps[440].play();
+  else if (pos === activeDivision) beeps[880].play();
+  return pos;
+}
+
+// =========== event bindings ===========
+
 timerWorker.onmessage = (e) => {
   const { tickData, intervals, ticks, bad } = e.data;
 
@@ -72,7 +97,9 @@ timerWorker.onmessage = (e) => {
   }
 
   if (ticks) {
-    document.querySelector(`span.tick-count`).textContent = `${ticks} (${bad} bad)`;
+    document.querySelector(
+      `span.tick-count`
+    ).textContent = `${ticks} (${bad} bad)`;
     return;
   }
 
@@ -91,26 +118,6 @@ timerWorker.onmessage = (e) => {
   });
 };
 
-function updateTickData(tickData) {
-  const pos = getDifference(tickData, prevTickData);
-
-  // if nothing changed, do nothing.
-  if (pos === -1) {
-    return requestAnimationFrame(updateFrame);
-  }
-
-  prevTickData = tickData;
-
-  // measure and quarter
-  if (pos === 0) beeps[220].play();
-  if (pos === 1) beeps[440].play();
-
-  // "something else"
-  if (pos === 2) beeps[880].play();
-
-  return pos;
-}
-
 document.querySelector(`button.play`).addEventListener(`click`, () => {
   audioContext = new AudioContext();
   if (!unlocked) {
@@ -125,12 +132,10 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
   timerWorker.postMessage({ start: true });
 });
 
-document
-  .querySelector(`button.stop`)
-  .addEventListener(`click`, () => {
-      const runtime = performance.now() - startTime;
-      document.querySelector(`span.runtime`).textContent = runtime;
-      timerWorker.postMessage({ stop: true });
-  });
+document.querySelector(`button.stop`).addEventListener(`click`, () => {
+  const runtime = performance.now() - startTime;
+  document.querySelector(`span.runtime`).textContent = runtime;
+  timerWorker.postMessage({ stop: true });
+});
 
 timerWorker.postMessage({ bpm: 125, divisions: 8 });
