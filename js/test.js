@@ -97,6 +97,7 @@ function buildDivisions() {
 }
 
 timerWorker.onmessage = (e) => {
+  console.log(`x`);
   // perform some light computation
   tryIncrement();
   // then immediately tell the worker to round-trip a tick
@@ -186,7 +187,7 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
     node.start(0);
     unlocked = true;
   }
-  setupBeeps();  
+  setupBeeps();
   run(RUNTIME_MS);
 });
 
