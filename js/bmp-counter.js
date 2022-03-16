@@ -11,7 +11,6 @@ let ticks = 0,
 loopWorker.onmessage = (e) => {
   // console.log(`received tick`);
   tryIncrement();
-
   // console.log(`requesting next tick`);
   loopWorker.postMessage(MORE);
 };

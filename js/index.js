@@ -137,7 +137,7 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
   const runtime = performance.now() - startTime;
-  document.querySelector(`span.runtime`).textContent = runtime;
+  document.querySelector(`span.runtime`).textContent = runtime.toFixed();
   timerWorker.postMessage({ stop: true });
 });
 
