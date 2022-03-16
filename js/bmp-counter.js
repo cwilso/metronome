@@ -1,4 +1,4 @@
-const loopWorker = new Worker("./andback.js");
+const loopWorker = new Worker("./loop.js");
 const MORE = { more: true };
 const timerIntervals = [];
 let startTime, BPM, intervals, smallest, tickData, prevTickData;
@@ -11,6 +11,7 @@ let ticks = 0,
 loopWorker.onmessage = (e) => {
   // console.log(`received tick`);
   tryIncrement();
+
   // console.log(`requesting next tick`);
   loopWorker.postMessage(MORE);
 };

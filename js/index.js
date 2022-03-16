@@ -1,12 +1,39 @@
 let audioContext;
 let unlocked = false;
 
-const beeps = {};
-let beepDuration = 0.05; // length of "beep" (in seconds)
+const beeps = {
+  get: (Hz) => {
+    if (!beeps[Hz]) {
+      const volume = audioContext.createGain();
+      volume.gain.setValueAtTime(0, audioContext.currentTime);
+      volume.connect(audioContext.destination);
+      const osc = audioContext.createOscillator();
+      osc.frequency.value = Hz;
+      osc.connect(volume);
+      osc.start();
+
+      const master = volume.gain;
+
+      beeps[Hz] = {
+        play: () => {
+          const when = audioContext.currentTime + 0.05;
+          master.setTargetAtTime(1, when, rampDuration);
+          master.setTargetAtTime(0, when + beepDuration, rampDuration);
+        },
+      };
+    }
+    return beeps[Hz];
+  }
+};
+let beepDuration = 0.05;
+let rampDuration = 0.01;
 let activeDivision = 2;
 
-const timerWorker = new Worker("js/forward.js");
+const timerWorker = new Worker("js/bmp-counter.js");
 let tickData, prevTickData, startTime;
+
+let bpm = 125;
+let divisions = 8;
 
 // =========== functions ===========
 
@@ -14,39 +41,13 @@ function create(tag) {
   return document.createElement(tag);
 }
 
-function setupBeeps() {
-  const routeAudio = (Hz) => {
-    const volume = audioContext.createGain();
-    volume.gain.setValueAtTime(0, audioContext.currentTime);
-    volume.connect(audioContext.destination);
-    const osc = audioContext.createOscillator();
-    osc.frequency.value = Hz;
-    osc.connect(volume);
-    osc.start();
-    return volume.gain;
-  };
-
-  [220, 440, 880].forEach((Hz) => {
-    const master = routeAudio(Hz);
-    beeps[Hz] = {
-      play: () => {
-        const when = audioContext.currentTime;
-        master.setTargetAtTime(1, when, 0.05);
-        master.setTargetAtTime(0, when + beepDuration, 0.05);
-      },
-    };
-  });
-}
-
 function getDifference(arr1, arr2) {
-  for (let i = 0, e = arr1.length; i < e; i++) {
-    if (arr1[i] !== arr2[i]) return i;
-  }
-  return -1;
+  return arr1.map((v,i) => arr2[i] !== v);
 }
 
 function buildDivisions(intervals) {
   const divisions = document.querySelector(`.divisions`);
+  divisions.textContent = ``;
   intervals.forEach((_, i) => {
     const ol = create(`ol`);
     ol.classList.add(`d${i}`);
@@ -71,7 +72,8 @@ function buildDivisions(intervals) {
 }
 
 function updateTickData(tickData) {
-  const pos = getDifference(tickData, prevTickData);
+  const flips = getDifference(tickData, prevTickData);
+  const pos = flips.findIndex(v => v);
 
   // if nothing changed, do nothing.
   if (pos === -1) return;
@@ -79,9 +81,9 @@ function updateTickData(tickData) {
   prevTickData = tickData;
 
   // measure, quarter, and chosen division
-  if (pos === 0) beeps[220].play();
-  else if (pos === 1) beeps[440].play();
-  else if (pos === activeDivision) beeps[880].play();
+  if (flips[0]) beeps.get(4 * 196).play();
+  if (flips[1]) beeps.get(4 * 65.21).play();
+  if (flips[activeDivision]) beeps.get(4 * 98).play();
   return pos;
 }
 
@@ -92,7 +94,8 @@ timerWorker.onmessage = (e) => {
 
   if (intervals) {
     buildDivisions(intervals);
-    prevTickData = intervals.map(() => -1);
+    prevTickData = intervals.map(() => 0);
+    prevTickData[0] = -1;
     return;
   }
 
@@ -119,7 +122,7 @@ timerWorker.onmessage = (e) => {
 };
 
 document.querySelector(`button.play`).addEventListener(`click`, () => {
-  audioContext = new AudioContext();
+  audioContext ??= new AudioContext();
   if (!unlocked) {
     // play silent buffer to unlock the audio
     const node = audioContext.createBufferSource();
@@ -127,8 +130,8 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
     node.start(0);
     unlocked = true;
   }
-  setupBeeps();
   startTime = performance.now();
+  audioContext.currentTime = 0;
   timerWorker.postMessage({ start: true });
 });
 
@@ -138,4 +141,16 @@ document.querySelector(`button.stop`).addEventListener(`click`, () => {
   timerWorker.postMessage({ stop: true });
 });
 
-timerWorker.postMessage({ bpm: 125, divisions: 8 });
+document.getElementById(`bpm`).addEventListener(`change`, (evt) => {
+  timerWorker.postMessage({ stop: true });
+  bpm = parseInt(evt.target.value);
+  timerWorker.postMessage({ bpm, divisions });
+});
+
+document.getElementById(`divisions`).addEventListener(`change`, (evt) => {
+  timerWorker.postMessage({ stop: true });
+  divisions = parseInt(evt.target.value);
+  timerWorker.postMessage({ bpm, divisions });
+});
+
+timerWorker.postMessage({ bpm, divisions });

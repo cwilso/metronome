@@ -5,17 +5,21 @@
     <meta name="viewport" content="width=device-width user-scalable=yes" />
     <title>Metronome</title>
     <link rel="stylesheet" href="css/main.css" />
-    <script src="js/test2.js" async defer></script>
+    <script src="js/index.js" async defer></script>
   </head>
   <body>
     <div>
+      bpm:
+      <input id="bpm" type="number" min="30" max="300" step="1" value="125" />
+      divisions:
+      <input id="divisions" type="number" min="1" max="32" step="1" value="8" />
       <button class="play">play</button> <button class="stop">stop</button>
     </div>
 
     <div>
       <p>
         Total number of ticks processed over
-        <span class="runtime"></span> milliseconds:
+        <span class="runtime">...</span> milliseconds:
         <span class="tick-count">(...pending...)</span>
       </p>
     </div>
