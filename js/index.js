@@ -1,3 +1,6 @@
+import { connectMIDI } from "./temp.js";
+import { context, master } from "./audio-context.js";
+
 let audioContext;
 let unlocked = false;
 
@@ -94,7 +97,7 @@ timerWorker.onmessage = (e) => {
 
   if (intervals) {
     buildDivisions(intervals);
-    prevTickData = intervals.map(() => 0);
+    prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
     return;
   }
@@ -129,9 +132,10 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
     node.buffer = audioContext.createBuffer(1, 1, 22050);
     node.start(0);
     unlocked = true;
+    connectMIDI(audioContext);
   }
+  context.resume(); 
   startTime = performance.now();
-  audioContext.currentTime = 0;
   timerWorker.postMessage({ start: true });
 });
 

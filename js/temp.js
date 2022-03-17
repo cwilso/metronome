@@ -1,0 +1,54 @@
+import { Keyboard } from "./keyboard.js";
+import { router } from "./router.js";
+
+let audioContext;
+
+function run(err) {
+  if (!err) new Keyboard(audioContext);
+}
+
+// router function for incoming MIDI messages
+function getMIDIMessage(midiMessage) {
+  var data = midiMessage.data;
+  var status = data[0];
+  var type = (status & 0xf0) >> 4;
+  var channel = status & 0x0f;
+  var data = data.slice(1);
+  router.receive(type, channel, data);
+}
+
+// general bootstrapping
+function onMidiSuccess(success) {
+  let deviceCount = 0;
+  for (let input of success.inputs.values()) {
+    input.onmidimessage = getMIDIMessage;
+    deviceCount++;
+  }
+  if (deviceCount > 0) {
+    run();
+  } else {
+    run(`No MIDI devices were found.`);
+  }
+}
+
+// even if midi device access fails, we still have a synth to play with
+function onMidiFail() {
+  run(
+    `Web MIDI is available, but MIDI device access failed (and the\nspec does not give me more details to help you find out why...)`
+  );
+}
+
+// kick it all of.
+function connectMIDI(_audioContext) {
+  audioContext ??= _audioContext;
+  if (!navigator.requestMIDIAccess) {
+    // Warn the user that they won't have MIDI functionality. Then load anyway
+    run(
+      `WebMIDI is not supported (without plugins?) in this browser.\nYou can still play around, just... no MIDI functionality, obviously.`
+    );
+  } else {
+    navigator.requestMIDIAccess().then(onMidiSuccess, onMidiFail);
+  }
+}
+
+export { connectMIDI };
