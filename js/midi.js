@@ -24,29 +24,34 @@ function onMidiSuccess(success) {
     input.onmidimessage = getMIDIMessage;
     deviceCount++;
   }
-  if (deviceCount > 0) {
-    run();
-  } else {
-    run(`No MIDI devices were found.`);
+  let msg;
+  if (deviceCount === 0) {
+    msg = `No MIDI devices were found.`;
   }
+  return run(msg);
 }
 
 // even if midi device access fails, we still have a synth to play with
 function onMidiFail() {
-  run(
+  return run(
     `Web MIDI is available, but MIDI device access failed (and the\nspec does not give me more details to help you find out why...)`
   );
 }
 
 // kick it all of.
-function connectMIDI() {
+async function connectMIDI() {
   if (!navigator.requestMIDIAccess) {
     // Warn the user that they won't have MIDI functionality. Then load anyway
     run(
       `WebMIDI is not supported (without plugins?) in this browser.\nYou can still play around, just... no MIDI functionality, obviously.`
     );
   } else {
-    navigator.requestMIDIAccess().then(onMidiSuccess, onMidiFail);
+    try {
+      await navigator.requestMIDIAccess();
+      return onMidiSuccess();
+    } catch (e) {
+      onMidiFail();
+    }
   }
 }
 

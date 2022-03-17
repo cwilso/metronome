@@ -54,10 +54,15 @@ class Key {
  * The full keyboard, but you only get to see 24 keys at a time.
  */
 class Keyboard {
-  constructor() {
+  constructor(makeActive = false) {
     this.keys = MIDI_KEYS.map((note) =>
       new Key(note).getDOMnode()
     );
+    if (makeActive || !Keyboard.actgive) Keyboard.active = this;
+  }
+
+  getKeyNodes() {
+    return this.keys;
   }
 }
 

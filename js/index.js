@@ -2,6 +2,7 @@ import { connectMIDI } from "./midi.js";
 import { context, setReverb } from "./audio-context.js";
 import { AudioGenerator } from "./audio-generator.js";
 import { IMPULSES } from "../impulses/impulses.js";
+import { Keyboard } from "./keyboard.js";
 
 const beeps = new AudioGenerator();
 const play = (note) => beeps.get(note).play(beepDuration);
@@ -126,11 +127,12 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
   counter.postMessage({ start: true });
 });
 
-document.querySelector(`button.midi`).addEventListener(`click`, () => {
+document.querySelector(`button.midi`).addEventListener(`click`, async () => {
   context.resume();
   document.querySelector(`button.play`).removeAttribute(`disabled`);
   document.querySelector(`button.stop`).removeAttribute(`disabled`);
-  connectMIDI();
+  const keyboard = await connectMIDI();
+  console.log(Keyboard.keys);
 });
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
