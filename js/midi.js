@@ -47,8 +47,8 @@ async function connectMIDI() {
     );
   } else {
     try {
-      await navigator.requestMIDIAccess();
-      return onMidiSuccess();
+      const result = await navigator.requestMIDIAccess();
+      return onMidiSuccess(result);
     } catch (e) {
       onMidiFail();
     }

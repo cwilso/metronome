@@ -58,7 +58,7 @@ class Keyboard {
     this.keys = MIDI_KEYS.map((note) =>
       new Key(note).getDOMnode()
     );
-    if (makeActive || !Keyboard.actgive) Keyboard.active = this;
+    if (makeActive || !Keyboard.active) Keyboard.active = this;
   }
 
   getKeyNodes() {

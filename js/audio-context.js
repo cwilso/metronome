@@ -15,7 +15,7 @@ async function setReverb(filepath) {
     return master.connect(context.destination);
   }
 
-  reverb = context.createreverb();
+  reverb = context.createConvolver();
   const response = await fetch(`impulses/${filepath}.ogg`);
   const audioData = await response.arrayBuffer();
   reverb.buffer = await context.decodeAudioData(audioData);
