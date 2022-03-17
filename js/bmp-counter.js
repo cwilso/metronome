@@ -1,35 +1,64 @@
-const loopWorker = new Worker("./loop.js");
-const MORE = { more: true };
-const timerIntervals = [];
-let startTime, BPM, intervals, smallest, tickData, prevTickData;
-let ticks = 0,
-  last = 0,
-  now,
-  bad = 0;
+/**
+ * This must be loaded as a web worker, and will post an object
+ * whenever any value ticks over, of the form:
+ *
+ *   {
+ *     tickData: [<measure count>, <quarter count>, ...]
+ *   }
+ *
+ * The tick data array is at least two elements long, including
+ * the current measure and quarter note, with subsequent elements
+ * representing fractions of a quarter note. tickData[2] represents
+ * half-divisions of the quarter note (i.e. eights), tickData[3]
+ * represents thirds-divisions of the quarter note (i.e. eight
+ * triplets), tickData[4] represents fourths-divisions of the
+ * quarter note (i.e. sixteenth notes), and so on. Also note that
+ * there is no "selection" mechanism: if you need 32nd note ticks,
+ * `division` must be set to a value 8 or higher, and tickData will
+ * include all quarter divisions up to 32nd notes.
+ *
+ * This counter accepts the following messages:
+ *
+ *    {
+ *      bpm: <number>,
+ *      division: <number>
+ *    }
+ *
+ *  which is followed by a postMessage response of the form:
+ *
+ *    {
+ *      intervals: [
+ *        measure length in ms,
+ *        quarter length in ms,
+ *        quarter length in ms / 2,
+ *            "    / 3,
+ *        " / 4,
+ *         ...
+ *      ]
+ *    }
+ *
+ *  Set the BPM and how many quarter-subdivisions should be tracked.
+ *  Note: this message will currently stop the counter, rather than
+ *  updating it in place. This will change to updating in place in
+ *  the future.
+ *
+ *    { start: <truthy> }
+ *
+ *  Reset and start the counter.
+ *
+ *    { stop: <truthy> }
+ *
+ *  Stop the counter.
+ */
 
-// Round-tripping the postMessage mechanism.
+const MORE = { more: true };
+const loopWorker = new Worker("./loop.js");
 loopWorker.onmessage = (e) => {
-  // console.log(`received tick`);
+  // we exploit postMessage round-tripping to effect an
+  // incredibly unpredictable, but high resolution timer.
   tryIncrement();
-  // console.log(`requesting next tick`);
   loopWorker.postMessage(MORE);
 };
-
-function setBPM(bpm = 125, MAX_DIVISION = 8) {
-  BPM = bpm;
-  intervals = [
-    // measure
-    (4 * 60000) / BPM,
-    // quarter
-    60000 / BPM,
-    // [2] is 1/8, [3] is eights triplet, [4] is 1/16, etc.
-  ];
-  for (let i = 0; i <= MAX_DIVISION - 2; i++) {
-    intervals.push(60000 / (BPM * (i + 2)));
-  }
-  smallest = intervals[intervals.length - 1];
-  postMessage({ intervals });
-}
 
 function tryIncrement() {
   const now = performance.now();
@@ -37,7 +66,6 @@ function tryIncrement() {
   const diff = now - last;
 
   if (diff >= 1) {
-    // console.log(`bump`);
     last = now;
     ticks = ticks + 1;
     timerIntervals.push(diff);
@@ -62,7 +90,6 @@ function tryIncrement() {
     // than the measure or quarter.
     for (let i = tickData.length - 1; i >= 0; i--) {
       if (tickData[i] !== prevTickData[i]) {
-        // console.log(`emitting tick event to owner`);
         postMessage({ tickData });
         prevTickData = tickData;
       }
@@ -70,25 +97,39 @@ function tryIncrement() {
   }
 }
 
+const timerIntervals = [];
+let startTime, BPM, intervals, smallest, tickData, prevTickData;
+let ticks = 0,
+  last = 0,
+  now,
+  bad = 0;
+
 onmessage = (e) => {
   const { start, stop, bpm, divisions } = e.data;
-
-  if (bpm) {
-    setBPM(bpm, divisions);
-  }
-
-  if (start) {
-    // console.log(`starting loop`);
-    ticks = 0;
-    startTime = last = performance.now();
-    tickData = intervals.map((v) => 0);
-    prevTickData = intervals.map((v) => -1);
-    loopWorker.postMessage({ start });
-  }
-
-  if (stop) {
-    // console.log(`halting loop`);
-    loopWorker.postMessage({ stop });
-    postMessage({ ticks: ticks, bad });
-  }
+  if (bpm) setBPM(bpm, divisions);
+  if (start) startCounter();
+  if (stop) stopCounter();
 };
+
+function setBPM(bpm = 125, MAX_DIVISION = 8) {
+  BPM = bpm;
+  intervals = [240000 / BPM, 60000 / BPM];
+  for (let i = 0; i <= MAX_DIVISION - 2; i++) {
+    intervals.push(60000 / (BPM * (i + 2)));
+  }
+  smallest = intervals[intervals.length - 1];
+  postMessage({ intervals });
+}
+
+function startCounter() {
+  ticks = 0;
+  startTime = last = performance.now();
+  tickData = intervals.map((v) => 0);
+  prevTickData = intervals.map(() => -1);
+  loopWorker.postMessage({ start: true });
+}
+
+function stopCounter() {
+  loopWorker.postMessage({ stop: true });
+  postMessage({ ticks: ticks, bad });
+}
