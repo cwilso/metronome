@@ -4,7 +4,6 @@ let equal_temperament_ratio = Math.pow(2, 1 / 12);
 const A = 440;
 
 function getFrequency(note, tuning = A) {
-    console.log(note);
   // A is code 69 in MIDI, so we can simply calculate
   // the frequency based on that, and some tuning for A.
   let diff = note - 69;

@@ -1,7 +1,8 @@
 import { router } from "./router.js";
-import { AudioGenerator } from "./auddio-generator.js";
+import { AudioGenerator } from "./audio-generator.js";
 
-const beeps = new AudioGenerator();
+const lfoFrequency = 3;
+const beeps = new AudioGenerator(lfoFrequency);
 
 // MIDI "only" has 128 real keys
 const MIDI_KEYS = [...Array(128)].map((_, i) => i);
@@ -36,8 +37,7 @@ class Key {
     if (note === this.note) {
       this.pressed = true;
       this.e.classList.add(`pressed`);
-      this.beep.start(velocity);
-      console.log(note, velocity);
+      this.beep.start(velocity / 127);
     }
   }
 
@@ -46,7 +46,6 @@ class Key {
       this.pressed = false;
       this.e.classList.remove(`pressed`);
       this.beep.stop();
-      console.log(note, 0);
     }
   }
 }

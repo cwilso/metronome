@@ -1,10 +1,10 @@
 import { Keyboard } from "./keyboard.js";
 import { router } from "./router.js";
 
-let audioContext;
-
 function run(err) {
-  if (!err) new Keyboard(audioContext);
+  if (!err) {
+    new Keyboard();
+  }
 }
 
 // router function for incoming MIDI messages
@@ -39,8 +39,7 @@ function onMidiFail() {
 }
 
 // kick it all of.
-function connectMIDI(_audioContext) {
-  audioContext ??= _audioContext;
+function connectMIDI() {
   if (!navigator.requestMIDIAccess) {
     // Warn the user that they won't have MIDI functionality. Then load anyway
     run(

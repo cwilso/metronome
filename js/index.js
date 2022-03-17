@@ -1,42 +1,14 @@
 import { connectMIDI } from "./temp.js";
-import { context, master } from "./audio-context.js";
-
-let audioContext;
-let unlocked = false;
-
-const beeps = {
-  get: (Hz) => {
-    if (!beeps[Hz]) {
-      const volume = audioContext.createGain();
-      volume.gain.setValueAtTime(0, audioContext.currentTime);
-      volume.connect(audioContext.destination);
-      const osc = audioContext.createOscillator();
-      osc.frequency.value = Hz;
-      osc.connect(volume);
-      osc.start();
-
-      const master = volume.gain;
-
-      beeps[Hz] = {
-        play: () => {
-          const when = audioContext.currentTime + 0.05;
-          master.setTargetAtTime(1, when, rampDuration);
-          master.setTargetAtTime(0, when + beepDuration, rampDuration);
-        },
-      };
-    }
-    return beeps[Hz];
-  }
-};
-let beepDuration = 0.05;
-let rampDuration = 0.01;
-let activeDivision = 2;
+import { context } from "./audio-context.js";
+import { AudioGenerator } from "./audio-generator.js";
+const beeps = new AudioGenerator();
 
 const timerWorker = new Worker("js/bmp-counter.js");
-let tickData, prevTickData, startTime;
-
+let prevTickData, startTime;
 let bpm = 125;
 let divisions = 8;
+let activeDivision = 2;
+let beepDuration = 0.05;
 
 // =========== functions ===========
 
@@ -45,7 +17,7 @@ function create(tag) {
 }
 
 function getDifference(arr1, arr2) {
-  return arr1.map((v,i) => arr2[i] !== v);
+  return arr1.map((v, i) => arr2[i] !== v);
 }
 
 function buildDivisions(intervals) {
@@ -76,7 +48,7 @@ function buildDivisions(intervals) {
 
 function updateTickData(tickData) {
   const flips = getDifference(tickData, prevTickData);
-  const pos = flips.findIndex(v => v);
+  const pos = flips.findIndex((v) => v);
 
   // if nothing changed, do nothing.
   if (pos === -1) return;
@@ -84,10 +56,14 @@ function updateTickData(tickData) {
   prevTickData = tickData;
 
   // measure, quarter, and chosen division
-  if (flips[0]) beeps.get(4 * 196).play();
-  if (flips[1]) beeps.get(4 * 65.21).play();
-  if (flips[activeDivision]) beeps.get(4 * 98).play();
+  if (flips[0]) play(79); // G4
+  else if (flips[1]) play(67); // G3
+  if (flips[activeDivision]) play(72); // C4
   return pos;
+}
+
+function play(note) {
+  beeps.get(note).play(beepDuration)
 }
 
 // =========== event bindings ===========
@@ -125,18 +101,14 @@ timerWorker.onmessage = (e) => {
 };
 
 document.querySelector(`button.play`).addEventListener(`click`, () => {
-  audioContext ??= new AudioContext();
-  if (!unlocked) {
-    // play silent buffer to unlock the audio
-    const node = audioContext.createBufferSource();
-    node.buffer = audioContext.createBuffer(1, 1, 22050);
-    node.start(0);
-    unlocked = true;
-    connectMIDI(audioContext);
-  }
-  context.resume(); 
+  context.resume();
   startTime = performance.now();
   timerWorker.postMessage({ start: true });
+});
+
+document.querySelector(`button.midi`).addEventListener(`click`, () => {
+  context.resume();
+  connectMIDI();
 });
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
