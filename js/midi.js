@@ -3,7 +3,6 @@ import { router } from "./router.js";
 
 function run(err) {
   if (!err) {
-    console.log(`fuck yes`);
     return new Keyboard();
   }
 }
@@ -20,16 +19,40 @@ function getMIDIMessage(midiMessage) {
 
 // general bootstrapping
 function onMidiSuccess(success) {
-  console.log(`yes`);
-
-  let deviceCount = 0;
+  let devices = [];
+  console.log(`INPUT DEVICES FOUND`);
   for (let input of success.inputs.values()) {
-    input.onmidimessage = getMIDIMessage;
-    deviceCount++;
+    console.log(input);
+    devices.push(input);
+    input.close();
   }
+
+  const htmlNode = document.getElementById(`mididevice`);
+  htmlNode.append(document.createElement(`option`));
+  devices.forEach((input) => {
+    const option = document.createElement(`option`);
+    option.value = option.textContent = input.name;
+    htmlNode.append(option);
+  });
+
+  htmlNode.addEventListener(`change`, (evt) => {
+    // close all ports
+    devices.forEach((d) => d.close());
+    // then bind to the indicated device
+    const name = evt.target.value;
+    const desired = devices.find((v) => v.name === name);
+    desired
+      .open()
+      .then((d) => console.log(`Now using ${d.name}`))
+      .catch((e) => console.error(`Error connecting to ${name}`));
+    desired.onmidimessage = getMIDIMessage;
+  });
+
   let msg;
-  if (deviceCount === 0) {
+  if (devices.length === 0) {
     msg = `No MIDI devices were found.`;
+  } else {
+    htmlNode.removeAttribute(`disabled`);
   }
   return run(msg);
 }

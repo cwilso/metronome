@@ -40,14 +40,12 @@ class AudioSource {
   constructor(note, type, LFO) {
     this.type = type;
     this.note = note;
+    this.base = getFrequency(note);
 
     // set up an oscillator.
     var oscillator = (this.oscillator = context.createOscillator());
     oscillator.type = type;
-    oscillator.frequency.setValueAtTime(
-      getFrequency(note),
-      context.currentTime
-    );
+    oscillator.frequency.setValueAtTime(this.base, context.currentTime);
 
     // is the frequency of this oscillator controlled
     LFO?.connect(oscillator.frequency);
@@ -58,6 +56,11 @@ class AudioSource {
     volume.connect(AudioSource.getPolyphonyVolume());
     oscillator.connect(volume);
     oscillator.start();
+  }
+
+  tuneTowards(frequency, ratio) {
+    const target = (1 - ratio) * this.base + ratio * frequency;
+    this.oscillator.frequency.setValueAtTime(target, context.currentTime);
   }
 
   start(velocity, attack) {

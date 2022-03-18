@@ -2,7 +2,7 @@ import { connectMIDI } from "./midi.js";
 import { context, setReverb } from "./audio-context.js";
 import { AudioGenerator } from "./audio-generator.js";
 import { IMPULSES } from "../impulses/impulses.js";
-import { Keyboard } from "./keyboard.js";
+import { router } from "./router.js";
 import { generate } from "./circles.js";
 
 const beeps = new AudioGenerator();
@@ -74,6 +74,17 @@ counter.onmessage = (e) => {
 
   if (intervals) {
     generate(intervals.length, (d) => (activeDivision = d), activeDivision);
+
+    // vizualise midi pitch/mod
+    const pitch = document.querySelector(`input.pitch`);
+    router.addListener({ onPitch: (v) => (pitch.value = v) }, `pitch`);
+
+    const mod = document.querySelector(`input.mod`);
+    router.addListener(
+      { onModWheel: (value) => (mod.value = value) },
+      `modwheel`
+    );
+
     // buildDivisions(intervals);
     prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
@@ -115,8 +126,8 @@ function updateMetronomePageElements(tickData) {
     .forEach((e) => e.classList.remove(`highlight`));
   const q = tickData[1];
   tickData.forEach((v, i) => {
-    if (i===0) return;
-    const n = i > 1 ? `${q * i + v + 1}` : `${((v%16) + 1)}`;
+    if (i === 0) return;
+    const n = i > 1 ? `${q * i + v + 1}` : `${(v % 16) + 1}`;
     const qs = `.d${i} *:nth-child(${n})`;
     document.querySelector(qs)?.classList.add(`highlight`);
   });
@@ -136,20 +147,22 @@ document.querySelector(`button.midi`).addEventListener(`click`, async (evt) => {
   document.querySelector(`button.play`).removeAttribute(`disabled`);
   document.querySelector(`button.stop`).removeAttribute(`disabled`);
   const keyboard = await connectMIDI();
-  const kdiv = document.querySelector(`div.keyboard`);
-  const white = kdiv.querySelector(`.white`);
-  white.innerHTML = ``;
-  const black = kdiv.querySelector(`.black`);
-  black.innerHTML = ``;
-  keyboard.keys.forEach((k, i) => {
-    if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
-      white.append(k);
-    } else {
-      black.append(k);
-    }
-  });
-});
 
+  if (keyboard) {
+    const kdiv = document.querySelector(`div.keyboard`);
+    const white = kdiv.querySelector(`.white`);
+    white.innerHTML = ``;
+    const black = kdiv.querySelector(`.black`);
+    black.innerHTML = ``;
+    keyboard.keys.forEach((k, i) => {
+      if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
+        white.append(k);
+      } else {
+        black.append(k);
+      }
+    });
+  }
+});
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
   const runtime = performance.now() - startTime;

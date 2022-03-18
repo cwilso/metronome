@@ -30,11 +30,10 @@ class AudioGenerator {
     LFO.start();
 
     // and listen for the MIDI "mod wheel" event
-    router.addListener(this, `control`);
+    router.addListener(this, `modwheel`);
   }
 
-  onControl(controller, value) {
-    if (controller !== 1) return;
+  onModWheel(value) {
     this.setLFOStrength(value / 127);
   }
 
@@ -54,5 +53,7 @@ class AudioGenerator {
     return sources[id];
   }
 }
+
+window.AudioGenerator = AudioGenerator;
 
 export { AudioGenerator };

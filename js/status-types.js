@@ -3,7 +3,7 @@
  */
 const STATUS_TYPES = [
   false,
-  false,
+  false, // It'd be great if this was the mod wheel, but that's CC=1
   false,
   false,
   false,

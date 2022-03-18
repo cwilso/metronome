@@ -12,6 +12,10 @@ body {
   overflow: auto;
 }
 
+body > div + div {
+  margin-top: 1em;
+}
+
 .divisions li.highlight {
   background: red;
 }
@@ -30,6 +34,8 @@ body {
   width: calc(7 * 9 * 0.7em);
   height: 3em;
   margin: 0.25em;
+  background: #66000010;
+  border-radius: 5px;
 }
 
 .keyboard div.black {
@@ -113,4 +119,13 @@ svg g path.highlight {
 g.prominent path.highlight,
 g:hover path.highlight {
   fill: red;
+}
+
+input[type="range"] {
+  vertical-align: middle;
+}
+
+
+#bpm, #divisions {
+  width: 4em;
 }

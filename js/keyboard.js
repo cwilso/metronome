@@ -1,11 +1,11 @@
 import { router } from "./router.js";
 import { AudioGenerator } from "./audio-generator.js";
+import { getFrequency } from "./get-frequency.js";
 
-const lfoFrequency = 3;
+const MIDI_KEYS = [...Array(128)].map((_, i) => i); // MIDI "only" has 128 real keys
+const pitchDistance = 2; // in semi-tones
+const lfoFrequency = 4; // in Hz
 const beeps = new AudioGenerator(lfoFrequency);
-
-// MIDI "only" has 128 real keys
-const MIDI_KEYS = [...Array(128)].map((_, i) => i);
 
 function domNode(note) {
   let e = document.createElement(`button`);
@@ -23,11 +23,20 @@ class Key {
   constructor(note) {
     this.pressed = false;
     this.note = note;
-    this.beep = beeps.get(note);
     this.e = domNode(note);
+    this.beep = beeps.get(note);
+
+    // note data
     router.addListener(this, `noteon`);
     router.addListener(this, `noteoff`);
 
+    // pitch bend information
+    this.lower = getFrequency(note - pitchDistance);
+    this.higher = getFrequency(note + pitchDistance);
+    router.addListener(this, `pitch`);
+
+    // FIXME: temporary mouse input, this needs to be handled better based
+    // on whether a button is down or up, not whether "a mouse did a thing".
     this.e.addEventListener(`mousedown`, (evt) => {
       this.play(0.8 * 127);
     });
@@ -62,6 +71,14 @@ class Key {
     this.pressed = false;
     this.e.classList.remove(`pressed`);
     this.beep.stop();
+  }
+
+  onPitch(data) {
+    const ratio = data / 8192;
+    if (ratio < 0) {
+      return this.beep.tuneTowards(this.lower, -ratio);
+    }
+    this.beep.tuneTowards(this.higher, ratio);
   }
 }
 
