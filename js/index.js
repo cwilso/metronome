@@ -3,6 +3,7 @@ import { context, setReverb } from "./audio-context.js";
 import { AudioGenerator } from "./audio-generator.js";
 import { IMPULSES } from "../impulses/impulses.js";
 import { Keyboard } from "./keyboard.js";
+import { generate } from "./circles.js";
 
 const beeps = new AudioGenerator();
 const play = (note) => beeps.get(note).play(beepDuration);
@@ -72,7 +73,8 @@ counter.onmessage = (e) => {
   const { tickData, intervals, ticks, bad } = e.data;
 
   if (intervals) {
-    buildDivisions(intervals);
+    generate(intervals.length, (d) => (activeDivision = d), activeDivision);
+    // buildDivisions(intervals);
     prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
     return;
@@ -113,8 +115,9 @@ function updateMetronomePageElements(tickData) {
     .forEach((e) => e.classList.remove(`highlight`));
   const q = tickData[1];
   tickData.forEach((v, i) => {
+    if (i===0) return;
     const n = i > 1 ? `${q * i + v + 1}` : `${((v%16) + 1)}`;
-    const qs = `.d${i} li:nth-child(${n})`;
+    const qs = `.d${i} *:nth-child(${n})`;
     document.querySelector(qs)?.classList.add(`highlight`);
   });
 }

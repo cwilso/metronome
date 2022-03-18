@@ -3,6 +3,7 @@ import { router } from "./router.js";
 
 function run(err) {
   if (!err) {
+    console.log(`fuck yes`);
     return new Keyboard();
   }
 }
@@ -19,6 +20,8 @@ function getMIDIMessage(midiMessage) {
 
 // general bootstrapping
 function onMidiSuccess(success) {
+  console.log(`yes`);
+
   let deviceCount = 0;
   for (let input of success.inputs.values()) {
     input.onmidimessage = getMIDIMessage;

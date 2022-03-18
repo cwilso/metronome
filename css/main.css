@@ -95,3 +95,22 @@ body {
 .key.pressed {
   background: lime;
 }
+
+g.prominent,
+g:hover {
+  fill: black;
+}
+
+g {
+  fill: grey;
+  cursor: pointer;
+}
+
+svg g path.highlight {
+  fill: #996666;
+}
+
+g.prominent path.highlight,
+g:hover path.highlight {
+  fill: red;
+}
