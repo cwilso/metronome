@@ -3,7 +3,7 @@ import { router } from "./router.js";
 
 function run(err) {
   if (!err) {
-    new Keyboard();
+    return new Keyboard();
   }
 }
 

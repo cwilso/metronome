@@ -21,6 +21,77 @@ body {
 }
 
 .divisions .clickable:hover {
-  background: #4080F020 !important;
+  background: #4080f020 !important;
   cursor: pointer;
+}
+
+.keyboard {
+  position: relative;
+  width: calc(7 * 9 * 0.7em);
+  height: 3em;
+  margin: 0.25em;
+}
+
+.keyboard div.black {
+  z-index: 2;
+}
+
+.keyboard div.black,
+.keyboard div.white {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.keyboard div.black {
+  top: 2px;
+}
+
+.keyboard div.black .key {
+  border-top: 0px;
+}
+
+.keyboard div.white {
+  border-top: 2px solid red;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.key {
+  display: inline-block;
+  width: 0.7em;
+  border: 1px solid gray;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+}
+
+.key + .key {
+  border-left: 0px;
+}
+
+.key.white {
+  background: white;
+  height: 4em;
+}
+
+.key.black {
+  background: black;
+  height: 2.75em;
+}
+
+.key1 {
+  margin-left: calc(1px + 0.25em);
+}
+
+.key3 {
+  margin-right: calc(1px + 0.75em);
+}
+
+.key10 {
+  margin-right: 0.25em;
+}
+
+.key.pressed {
+  background: lime;
 }

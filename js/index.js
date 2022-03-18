@@ -29,14 +29,15 @@ function buildImpulseSelector() {
   const reverb = document.getElementById(`reverb`);
   reverb.innerHTML = ``;
   const none = create(`option`);
+  none.value = ``;
   none.textContent = `none`;
   reverb.append(none);
-  IMPULSES.forEach(name => {
+  IMPULSES.forEach((name) => {
     let option = create(`option`);
     option.value = name;
     option.textContent = name;
-    reverb.append(option)
-  })
+    reverb.append(option);
+  });
 }
 
 function buildDivisions(intervals) {
@@ -64,7 +65,6 @@ function buildDivisions(intervals) {
     divisions.append(ol);
   });
 }
-
 
 // ======== bpm counter bindings ========
 
@@ -100,8 +100,8 @@ function updateTickData(tickData) {
   prevTickData = tickData;
 
   // Do some beeps for measure, quarter, and chosen division,
-  // using the notes G4, G3, and C4 respectively
-  if (flips[0]) play(79);
+  // using the notes C5, G3, and C4 respectively
+  if (flips[0]) play(84);
   else if (flips[1]) play(67);
   if (flips[activeDivision]) play(72);
   return pos;
@@ -113,7 +113,7 @@ function updateMetronomePageElements(tickData) {
     .forEach((e) => e.classList.remove(`highlight`));
   const q = tickData[1];
   tickData.forEach((v, i) => {
-    const n = i > 1 ? `${q * i + v + 1}` : `${v + 1}`;
+    const n = i > 1 ? `${q * i + v + 1}` : `${((v%16) + 1)}`;
     const qs = `.d${i} li:nth-child(${n})`;
     document.querySelector(qs)?.classList.add(`highlight`);
   });
@@ -127,13 +127,26 @@ document.querySelector(`button.play`).addEventListener(`click`, () => {
   counter.postMessage({ start: true });
 });
 
-document.querySelector(`button.midi`).addEventListener(`click`, async () => {
+document.querySelector(`button.midi`).addEventListener(`click`, async (evt) => {
+  evt.target.setAttribute(`disabled`, `disabled`);
   context.resume();
   document.querySelector(`button.play`).removeAttribute(`disabled`);
   document.querySelector(`button.stop`).removeAttribute(`disabled`);
   const keyboard = await connectMIDI();
-  console.log(Keyboard.keys);
+  const kdiv = document.querySelector(`div.keyboard`);
+  const white = kdiv.querySelector(`.white`);
+  white.innerHTML = ``;
+  const black = kdiv.querySelector(`.black`);
+  black.innerHTML = ``;
+  keyboard.keys.forEach((k, i) => {
+    if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
+      white.append(k);
+    } else {
+      black.append(k);
+    }
+  });
 });
+
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
   const runtime = performance.now() - startTime;

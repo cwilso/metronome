@@ -9,10 +9,10 @@ const MIDI_KEYS = [...Array(128)].map((_, i) => i);
 
 function domNode(note) {
   let e = document.createElement(`button`);
-  let label = note % 12 === 0 ? note / 12 : ``;
-  e.textContent = label;
+  // let label = note % 12 === 0 ? note / 12 : ``;
+  // e.textContent = label;
   let color = [1, 3, 6, 8, 10].indexOf(note % 12) > -1 ? `black` : `white`;
-  e.classList.add(color, `key`);
+  e.classList.add(color, `key`, `key${note % 12}`, `midi${note}`);
   return e;
 }
 
@@ -27,6 +27,13 @@ class Key {
     this.e = domNode(note);
     router.addListener(this, `noteon`);
     router.addListener(this, `noteoff`);
+
+    this.e.addEventListener(`mousedown`, (evt) => {
+      this.play(0.8 * 127);
+    });
+    document.addEventListener(`mouseup`, (evt) => {
+      this.stop();
+    });
   }
 
   getDOMnode() {
@@ -35,18 +42,26 @@ class Key {
 
   onNoteOn(note, velocity) {
     if (note === this.note) {
-      this.pressed = true;
-      this.e.classList.add(`pressed`);
-      this.beep.start(velocity / 127);
+      this.play(velocity);
     }
+  }
+
+  play(velocity) {
+    this.pressed = true;
+    this.e.classList.add(`pressed`);
+    this.beep.start(velocity / 127);
   }
 
   onNoteOff(note) {
     if (note === this.note) {
-      this.pressed = false;
-      this.e.classList.remove(`pressed`);
-      this.beep.stop();
+      this.stop();
     }
+  }
+
+  stop() {
+    this.pressed = false;
+    this.e.classList.remove(`pressed`);
+    this.beep.stop();
   }
 }
 
@@ -55,9 +70,7 @@ class Key {
  */
 class Keyboard {
   constructor(makeActive = false) {
-    this.keys = MIDI_KEYS.map((note) =>
-      new Key(note).getDOMnode()
-    );
+    this.keys = MIDI_KEYS.map((note) => new Key(note).getDOMnode());
     if (makeActive || !Keyboard.active) Keyboard.active = this;
   }
 
