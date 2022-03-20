@@ -7,35 +7,55 @@
     <link rel="stylesheet" href="css/main.css" />
     <script src="js/index.js" type="module" async></script>
   </head>
-  <body>
-    <div>
-      <button class="midi">enable MIDI</button>
-      <select id="mididevice" disabled></select>
-      pitch:
-      <input
-        class="pitch"
-        type="range"
-        min="-8192"
-        max="8191"
-        value="0"
-        disabled
-      />
-      mod wheel:
-      <input class="mod" type="range" min="0" max="127" value="0" disabled />
-    </div>
 
-    <div>
-      <button class="play" disabled="disabled">play</button>
-      <button class="stop" disabled="disabled">stop</button>
-      bpm:
-      <input id="bpm" type="number" min="30" max="300" step="1" value="125" />
-      divisions:
-      <input id="divisions" type="number" min="1" max="32" step="1" value="8" />
-      <a href="https://www.voxengo.com/impulses/">reverb</a>:
-      <select id="reverb">
-        <option value="" selected>none</option>
-      </select>
-    </div>
+  <body>
+    <section class="controls">
+      <div>
+        <button class="midi">enable MIDI</button>
+        <select id="mididevice" disabled></select>
+        pitch:
+        <input
+          class="pitch"
+          type="range"
+          min="-8192"
+          max="8191"
+          value="0"
+          disabled
+        />
+        mod wheel:
+        <input class="mod" type="range" min="0" max="127" value="0" disabled />
+      </div>
+
+      <div>
+        Volume: <span class="master"></span>
+        Effects:
+        <a href="https://www.voxengo.com/impulses/">reverb</a>:
+        <select id="reverb">
+          <option value="" selected>none</option>
+        </select>
+        chorus: <button class="chorus">enable</button>
+      </div>
+
+      <div>EQ: <span class="eq">(...pending...)</span></div>
+
+      <div>
+        <button class="play">play</button>
+        <button class="stop">stop</button>
+        bpm:
+        <input id="bpm" type="number" min="30" max="300" step="1" value="125" />
+        divisions:
+        <input
+          id="divisions"
+          type="number"
+          min="1"
+          max="32"
+          step="1"
+          value="8"
+        />
+      </div>
+
+      <svg width="50vh" height="50vh" viewBox="0 0 500 500" id="circles"></svg>
+    </section>
 
     <div class="keyboard">
       <div class="black"></div>
@@ -49,9 +69,5 @@
         <span class="tick-count">(...pending...)</span>
       </p>
     </div>
-
-    <svg width="50vh" height="50vh" viewBox="0 0 500 500" id="circles"></svg>
-
-    <div class="divisions"></div>
   </body>
 </html>

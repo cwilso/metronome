@@ -52,6 +52,11 @@ class AudioGenerator {
     if (!sources[id]) sources[id] = new AudioSource(note, type, this.lfoGain);
     return sources[id];
   }
+
+  toggleOsc2() {
+    console.log(`toggle...`);
+    Object.entries(sources).forEach(([id, source]) => source.toggleOsc2());
+  }
 }
 
 window.AudioGenerator = AudioGenerator;

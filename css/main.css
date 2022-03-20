@@ -1,10 +1,17 @@
 body,
 html {
+  padding: 0;
   margin: 0;
-  height: 100%;
-  position: relative;
-  padding-top: 1em;
-  padding-left: 1em;
+  background: darkblue;
+}
+
+body {
+  display: block;
+  width: 960px;
+  min-height: 100vh;
+  margin: auto;
+  background: white;
+  padding: 1em 2em;
   box-sizing: border-box;
 }
 
@@ -31,11 +38,11 @@ body > div + div {
 
 .keyboard {
   position: relative;
-  width: calc(7 * 9 * 0.7em);
   height: 3em;
-  margin: 0.25em;
   background: #66000010;
   border-radius: 5px;
+  display: inline-block;
+  margin-bottom: 0.5em;
 }
 
 .keyboard div.black {
@@ -44,9 +51,7 @@ body > div + div {
 
 .keyboard div.black,
 .keyboard div.white {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
 }
 
 .keyboard div.black {
@@ -61,6 +66,7 @@ body > div + div {
   border-top: 2px solid red;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
+  transform: translate(0, -2.35em);
 }
 
 .key {
@@ -112,20 +118,33 @@ g {
   cursor: pointer;
 }
 
-svg g path.highlight {
-  fill: #996666;
-}
-
-g.prominent path.highlight,
-g:hover path.highlight {
-  fill: red;
-}
-
 input[type="range"] {
   vertical-align: middle;
 }
 
-
-#bpm, #divisions {
+#bpm,
+#divisions {
   width: 4em;
+}
+
+button.chorus.enabled {
+  background: #2fb1db;
+  color: white;
+}
+
+path.active {
+  fill: #8234c1;
+}
+
+path.active.highlight {
+  fill: #4673a4;
+}
+
+g.prominent path.highlight,
+g:hover path.highlight {
+  fill: #00dbff;
+}
+
+*:focus {
+  outline: 2px solid red !important;
 }

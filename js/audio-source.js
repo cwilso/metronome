@@ -41,11 +41,20 @@ class AudioSource {
     this.type = type;
     this.note = note;
     this.base = getFrequency(note);
+    this.detune = 1.012;
 
     // set up an oscillator.
     var oscillator = (this.oscillator = context.createOscillator());
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(this.base, context.currentTime);
+
+    // set up a second oscillator!
+    var oscillator2 = (this.oscillator2 = context.createOscillator());
+    oscillator2.type = `triangle`;
+    oscillator2.frequency.setValueAtTime(
+      this.base * this.detune,
+      context.currentTime
+    );
 
     // is the frequency of this oscillator controlled
     LFO?.connect(oscillator.frequency);
@@ -56,11 +65,22 @@ class AudioSource {
     volume.connect(AudioSource.getPolyphonyVolume());
     oscillator.connect(volume);
     oscillator.start();
+
+    var osc2 = (this.volume2 = context.createGain());
+    osc2.gain.value = 0;
+    osc2.connect(volume);
+    oscillator2.connect(osc2);
+    oscillator2.start();
+  }
+
+  toggleOsc2() {
+    this.volume2.gain.value = this.volume2.gain.value < 1 ? 1 : 0;
   }
 
   tuneTowards(frequency, ratio) {
     const target = (1 - ratio) * this.base + ratio * frequency;
     this.oscillator.frequency.setValueAtTime(target, context.currentTime);
+    this.oscillator2.frequency.setValueAtTime(target * this.detune, context.currentTime);
   }
 
   start(velocity, attack) {

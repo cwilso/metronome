@@ -1,4 +1,5 @@
 const TICK = { tick: true };
+const tick = () => postMessage(TICK);
 let running = false;
 
 // instant return loop, let's see if we can get more data than setInterval
@@ -15,6 +16,6 @@ onmessage = function (e) {
 
   if (running) {
     // console.log(`posting tick`);
-    postMessage(TICK);
+    tick();
   }
 };

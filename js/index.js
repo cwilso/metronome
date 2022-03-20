@@ -1,11 +1,13 @@
 import { connectMIDI } from "./midi.js";
-import { context, setReverb } from "./audio-context.js";
+import { context, master, setReverb, EQcontrols } from "./audio-context.js";
 import { AudioGenerator } from "./audio-generator.js";
 import { IMPULSES } from "../impulses/impulses.js";
 import { router } from "./router.js";
 import { generate } from "./circles.js";
+import { slider } from "./slider.js";
+import { Keyboard } from "./keyboard.js";
 
-const beeps = new AudioGenerator();
+const beeps = (window.beeps = new AudioGenerator());
 const play = (note) => beeps.get(note).play(beepDuration);
 
 let prevTickData, startTime;
@@ -41,49 +43,13 @@ function buildImpulseSelector() {
   });
 }
 
-function buildDivisions(intervals) {
-  const divisions = document.querySelector(`.divisions`);
-  divisions.textContent = ``;
-  intervals.forEach((_, i) => {
-    const ol = create(`ol`);
-    ol.classList.add(`d${i}`);
-    if (i >= 2) {
-      ol.addEventListener(`click`, () => (activeDivision = i));
-      ol.classList.add(`clickable`);
-    }
-    let rows = 4;
-    if (i === 0) {
-      rows = 16;
-    } else if (i > 1) {
-      rows = 4 * i;
-    }
-    for (let j = 0; j < rows; j++) {
-      const li = create(`li`);
-      li.textContent = `x`;
-      ol.append(li);
-    }
-
-    divisions.append(ol);
-  });
-}
-
 // ======== bpm counter bindings ========
 
-counter.onmessage = (e) => {
+counter.onmessage = async (e) => {
   const { tickData, intervals, ticks, bad } = e.data;
 
   if (intervals) {
     generate(intervals.length, (d) => (activeDivision = d), activeDivision);
-
-    // vizualise midi pitch/mod
-    const pitch = document.querySelector(`input.pitch`);
-    router.addListener({ onPitch: (v) => (pitch.value = v) }, `pitch`);
-
-    const mod = document.querySelector(`input.mod`);
-    router.addListener(
-      { onModWheel: (value) => (mod.value = value) },
-      `modwheel`
-    );
 
     // buildDivisions(intervals);
     prevTickData = intervals.map(() => -1);
@@ -98,12 +64,13 @@ counter.onmessage = (e) => {
     return;
   }
 
-  if (updateTickData(tickData) !== undefined) {
-    updateMetronomePageElements(tickData);
+  const flips = await updateTickData(tickData);
+  if (flips !== undefined) {
+    updateMetronomePageElements(tickData, flips);
   }
 };
 
-function updateTickData(tickData) {
+async function updateTickData(tickData) {
   const flips = getDifference(tickData, prevTickData);
   const pos = flips.findIndex((v) => v);
 
@@ -117,10 +84,10 @@ function updateTickData(tickData) {
   if (flips[0]) play(84);
   else if (flips[1]) play(67);
   if (flips[activeDivision]) play(72);
-  return pos;
+  return flips;
 }
 
-function updateMetronomePageElements(tickData) {
+async function updateMetronomePageElements(tickData, flips) {
   document
     .querySelectorAll(`.highlight`)
     .forEach((e) => e.classList.remove(`highlight`));
@@ -131,37 +98,90 @@ function updateMetronomePageElements(tickData) {
     const qs = `.d${i} *:nth-child(${n})`;
     document.querySelector(qs)?.classList.add(`highlight`);
   });
+
+  if (flips[1]) {
+    document
+      .querySelectorAll(`path.active`)
+      .forEach((e) => e.classList.remove(`active`));
+    document
+      .querySelectorAll(`path.q${q}`)
+      .forEach((e) => e.classList.add(`active`));
+  }
 }
 
 // ========= page event bindings =========
 
 document.querySelector(`button.play`).addEventListener(`click`, () => {
-  context.resume();
+  console.log(`start the clock`);
   startTime = performance.now();
   counter.postMessage({ start: true });
 });
 
 document.querySelector(`button.midi`).addEventListener(`click`, async (evt) => {
   evt.target.setAttribute(`disabled`, `disabled`);
-  context.resume();
   document.querySelector(`button.play`).removeAttribute(`disabled`);
   document.querySelector(`button.stop`).removeAttribute(`disabled`);
-  const keyboard = await connectMIDI();
+  await connectMIDI();
 
-  if (keyboard) {
-    const kdiv = document.querySelector(`div.keyboard`);
-    const white = kdiv.querySelector(`.white`);
-    white.innerHTML = ``;
-    const black = kdiv.querySelector(`.black`);
-    black.innerHTML = ``;
-    keyboard.keys.forEach((k, i) => {
-      if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
-        white.append(k);
-      } else {
-        black.append(k);
-      }
-    });
-  }
+  router.addListener(
+    {
+      // control codes for my Novation LaunchKey 49 mk3
+      onControl: (controller, value) => {
+        if (controller === 102) {
+          // track down
+        }
+        if (controller === 103) {
+          // track up
+        }
+        if (controller === 104 && value === 127) {
+          // "right arrow" pad, should probably cycle focus
+          const keyboardfocusableElements = [
+            ...document
+              .querySelector(`.controls`)
+              .querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), details, [tabindex]:not([tabindex="-1"])'
+              ),
+          ];
+          const klen = keyboardfocusableElements.length;
+          const cur = document.activeElement;
+          let pos = keyboardfocusableElements.findIndex((v) => v === cur);
+          if (pos < 0) pos = 0;
+          const next = keyboardfocusableElements[(pos + 1) % klen];
+          next.focus();
+        }
+        if (controller === 106) {
+          if (value === 127)
+            // todo: add key repeat
+            document.activeElement.dispatchEvent(
+              new KeyboardEvent(`keydown`, { key: `Arrow Up` })
+            );
+          if (value === 0)
+            document.activeElement.dispatchEvent(
+              new KeyboardEvent(`keyup`, { key: `Arrow Up` })
+            );
+        }
+        if (controller === 107) {
+          if (value === 127)
+            // todo: add key repeat
+            document.activeElement.dispatchEvent(
+              new KeyboardEvent(`keydown`, { key: `Arrow Down` })
+            );
+          if (value === 0)
+            document.activeElement.dispatchEvent(
+              new KeyboardEvent(`keyup`, { key: `Arrow Down` })
+            );
+        }
+        if (controller === 115 && value === 127)
+          document.querySelector(`button.play`).click();
+        if (controller === 116 && value === 127)
+          document.querySelector(`button.stop`).click();
+        if (controller === 117 && value === 127)
+          document.querySelector(`button.record`).click();
+        console.log(controller, value);
+      },
+    },
+    `control`
+  );
 });
 
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
@@ -186,7 +206,71 @@ document.getElementById(`reverb`).addEventListener(`change`, (evt) => {
   setReverb(evt.target.value);
 });
 
+// vizualise midi pitch/mod
+const pitch = document.querySelector(`input.pitch`);
+router.addListener({ onPitch: (v) => (pitch.value = v) }, `pitch`);
+
+const mod = document.querySelector(`input.mod`);
+router.addListener({ onModWheel: (value) => (mod.value = value) }, `modwheel`);
+
+// chorus button
+document.querySelector(`button.chorus`).addEventListener(`click`, (evt) => {
+  const btn = evt.target;
+  btn.classList.toggle(`enabled`);
+  btn.textContent = btn.classList.contains(`enabled`) ? `disable` : `enable`;
+  beeps.toggleOsc2();
+});
+
+const masterVolume = document.querySelector(`span.master`);
+masterVolume.textContent = ``;
+slider(
+  {
+    min: 0,
+    max: 1,
+    step: 0.01,
+    value: 1,
+    input: (evt) => (master.gain.value = parseFloat(evt.target.value)),
+  },
+  masterVolume
+);
+
 // ========= startup bootstrap =========
+
+(function buildKeyboard() {
+  const keyboard = new Keyboard();
+  const kdiv = document.querySelector(`div.keyboard`);
+  const white = kdiv.querySelector(`.white`);
+  white.innerHTML = ``;
+  const black = kdiv.querySelector(`.black`);
+  black.innerHTML = ``;
+  keyboard.keyNodes.forEach((k, i) => {
+    if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
+      white.append(k);
+    } else {
+      black.append(k);
+    }
+  });
+})();
+
+(function buildEQcontrols() {
+  const eq = document.querySelector(`span.eq`);
+  eq.textContent = ``;
+  EQcontrols.forEach((e) => {
+    const l = create(`label`);
+    l.textContent = e.getAttribute(`label`);
+    eq.append(l, e);
+  });
+})();
 
 buildImpulseSelector();
 counter.postMessage({ bpm, divisions });
+
+const initialClick = (evt) => {
+  console.log(`resuming context`);
+  document.removeEventListener(`mousedown`, initialClick, true);
+  document.removeEventListener(`keydown`, initialClick, true);
+  context.resume();
+};
+
+document.addEventListener(`mousedown`, initialClick, true);
+document.addEventListener(`keydown`, initialClick, true);

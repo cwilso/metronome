@@ -34,15 +34,6 @@ class Key {
     this.lower = getFrequency(note - pitchDistance);
     this.higher = getFrequency(note + pitchDistance);
     router.addListener(this, `pitch`);
-
-    // FIXME: temporary mouse input, this needs to be handled better based
-    // on whether a button is down or up, not whether "a mouse did a thing".
-    this.e.addEventListener(`mousedown`, (evt) => {
-      this.play(0.8 * 127);
-    });
-    document.addEventListener(`mouseup`, (evt) => {
-      this.stop();
-    });
   }
 
   getDOMnode() {
@@ -87,12 +78,50 @@ class Key {
  */
 class Keyboard {
   constructor(makeActive = false) {
-    this.keys = MIDI_KEYS.map((note) => new Key(note).getDOMnode());
+    this.keys = MIDI_KEYS.map((note) => new Key(note));
+    this.keyNodes = this.keys.map(key => key.getDOMnode());
     if (makeActive || !Keyboard.active) Keyboard.active = this;
+
+    this.keyMapping = {};
+    const getCodes = (keys, start) => Object.fromEntries(keys.split(``).map((c,i) => [c, i + start]));
+    Object.assign(this.keyMapping, getCodes(`zsxdcvgbhnjm`, 48));
+    Object.assign(this.keyMapping, getCodes(`q2w3er5t6y7ui9o0p[=]`, 60));
+    console.log(this.keyMapping);
+
+    this.handleDown = (evt) => {
+      if (evt.repeat) return;
+      const { shift, altKey, ctrlKey, metaKey } = evt;
+      const modified = shift || altKey || ctrlKey || metaKey;
+      this.handleKeyDown(evt.key, modified ? { shift, altKey, ctrlKey, metaKey } : undefined);
+    };
+    document.addEventListener(`keydown`, this.handleDown);
+    this.handleUp = (evt) => this.handleKeyUp(evt.key, evt.shift);
+    document.addEventListener(`keyup`, this.handleUp);
   }
 
   getKeyNodes() {
     return this.keys;
+  }
+
+  handleKeyDown(key, modifiers) {
+    if (key === `<`) return this.changeOctave(-1);
+    if (key === `>`) return this.changeOctave(1);
+    if (modifiers) return;
+    const code = this.keyMapping[key];
+    if (code === undefined) return;
+    this.keys[code].play(63);
+  }
+
+  handleKeyUp(key, modifiers) {
+    if (modifiers) return;
+    const code = this.keyMapping[key];
+    if (code === undefined) return;
+    this.keys[code].stop();
+  }
+
+  changeOctave(shift) {
+    const delta = shift * 12;
+    Object.keys(this.keyMapping).forEach(key => this.keyMapping[key] += delta);
   }
 }
 

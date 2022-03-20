@@ -52,12 +52,15 @@
  */
 
 const MORE = { more: true };
+const more = () => loopWorker.postMessage(MORE);
+
 const loopWorker = new Worker("./loop.js");
-loopWorker.onmessage = (e) => {
+
+loopWorker.onmessage = () => {
   // we exploit postMessage round-tripping to effect an
   // incredibly unpredictable, but high resolution timer.
   tryIncrement();
-  loopWorker.postMessage(MORE);
+  setTimeout(more, 1);
 };
 
 function tryIncrement() {
@@ -104,7 +107,7 @@ let ticks = 0,
   now,
   bad = 0;
 
-onmessage = (e) => {
+onmessage = async (e) => {
   const { start, stop, bpm, divisions } = e.data;
   if (bpm) setBPM(bpm, divisions);
   if (start) startCounter();

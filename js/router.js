@@ -78,7 +78,7 @@ class MIDIRouter {
     var controller = data[0];
     var value = data[1];
 
-    if(controller === 1) {
+    if (controller === 1) {
       return this.modwheel(channel, value);
     }
 
@@ -114,7 +114,7 @@ class MIDIRouter {
     var pitch = data[1] << 7;
     pitch |= data[0];
 
-    // TODO: pitch control probably needs rate limiting
+    // minor rate limiting
     const lastPitch = this.lastPitch || 0;
     const now = Date.now();
     if (now - lastPitch > 10) {

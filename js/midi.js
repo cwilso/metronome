@@ -1,9 +1,8 @@
-import { Keyboard } from "./keyboard.js";
 import { router } from "./router.js";
 
 function run(err) {
-  if (!err) {
-    return new Keyboard();
+  if (err) {
+    return err;
   }
 }
 

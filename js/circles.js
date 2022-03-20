@@ -2,16 +2,16 @@ const { sin, cos, PI } = Math;
 const TAU = PI * 2;
 const vb = circles.getAttribute(`viewBox`).split(` `).map(parseFloat);
 const c = vb[2] / 2;
-const thickness = 20;
 
 function rotate(x, y, a) {
   return [x * cos(a) - y * sin(a), x * sin(a) + y * cos(a)];
 }
 
 function generate(levels = 10, highlightFn, activeDivision) {
-  const aoffet = -TAU / 4;
-
+  const aoffet = -3 * TAU / 8;
   const groups = [];
+  const gap = 1;
+  const thickness = (c - (levels+1)*gap) / (levels+1);
 
   for (let l = 0; l < levels - 1; l++) {
     let g = document.createElementNS(`http://www.w3.org/2000/svg`, `g`);
@@ -27,7 +27,6 @@ function generate(levels = 10, highlightFn, activeDivision) {
 
     const divs = l === 0 ? l + 4 : (l + 1) * 4;
     const fraction = TAU / divs;
-    const gap = 1;
 
     for (let i = 0; i < divs; i++) {
       let path = document.createElementNS(`http://www.w3.org/2000/svg`, `path`);
@@ -48,6 +47,11 @@ function generate(levels = 10, highlightFn, activeDivision) {
           `Z`,
         ].join(` `)
       );
+
+      if (l>0) {
+        path.classList.add(`q${(i/(l+1))|0}`);
+      }
+
       g.appendChild(path);
 
       g.addEventListener(`click`, () => {
@@ -60,6 +64,7 @@ function generate(levels = 10, highlightFn, activeDivision) {
     }
   }
 
+  circles.textContent = ``;
   groups.reverse().forEach((g) => circles.appendChild(g));
 }
 
