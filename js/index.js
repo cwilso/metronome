@@ -6,11 +6,12 @@ import { router } from "./router.js";
 import { generate } from "./circles.js";
 import { slider } from "./slider.js";
 import { Keyboard } from "./keyboard.js";
+import { recorder } from "./recorder.js";
 
 const beeps = (window.beeps = new AudioGenerator());
 const play = (note) => beeps.get(note).play(beepDuration);
 
-let prevTickData, startTime;
+let prevTickData, startTime, intervalValues;
 let bpm = 125;
 let divisions = 8;
 let activeDivision = 2;
@@ -54,6 +55,7 @@ counter.onmessage = async (e) => {
     // buildDivisions(intervals);
     prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
+    intervalValues = intervals;
     return;
   }
 
@@ -66,6 +68,7 @@ counter.onmessage = async (e) => {
 
   const flips = await updateTickData(tickData);
   if (flips !== undefined) {
+    recorder.tick(tickData, flips);
     updateMetronomePageElements(tickData, flips);
   }
 };
@@ -111,17 +114,14 @@ async function updateMetronomePageElements(tickData, flips) {
 
 // ========= page event bindings =========
 
-document.querySelector(`button.play`).addEventListener(`click`, () => {
-  console.log(`start the clock`);
-  startTime = performance.now();
-  counter.postMessage({ start: true });
-});
-
 document.querySelector(`button.midi`).addEventListener(`click`, async (evt) => {
   evt.target.setAttribute(`disabled`, `disabled`);
   document.querySelector(`button.play`).removeAttribute(`disabled`);
   document.querySelector(`button.stop`).removeAttribute(`disabled`);
-  await connectMIDI();
+  const result = await connectMIDI();
+  if (!result) {
+    evt.target.removeAttribute(`disabled`);
+  }
 
   router.addListener(
     {
@@ -184,10 +184,25 @@ document.querySelector(`button.midi`).addEventListener(`click`, async (evt) => {
   );
 });
 
+document.querySelector(`button.play`).addEventListener(`click`, () => {
+  startTime = performance.now();
+  const old = recorder.clear();
+  // TODO: do we want to use this? overdub? Choices?
+  recorder.start();
+  counter.postMessage({ start: true });
+});
+
 document.querySelector(`button.stop`).addEventListener(`click`, () => {
   const runtime = performance.now() - startTime;
   document.querySelector(`span.runtime`).textContent = runtime.toFixed();
   counter.postMessage({ stop: true });
+  const noteData = recorder.stop();
+  console.log(noteData);
+});
+
+document.querySelector(`button.playback`).addEventListener(`click`, () => {
+  recorder.playback(intervalValues);
+  counter.postMessage({ start: true });
 });
 
 document.getElementById(`bpm`).addEventListener(`change`, (evt) => {

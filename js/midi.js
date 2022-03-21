@@ -1,9 +1,8 @@
 import { router } from "./router.js";
 
 function run(err) {
-  if (err) {
-    return err;
-  }
+  return true;
+  // we don't really do anything else here
 }
 
 // router function for incoming MIDI messages
@@ -43,22 +42,22 @@ function onMidiSuccess(success) {
     desired
       .open()
       .then((d) => console.log(`Now using ${d.name}`))
-      .catch((e) => console.error(`Error connecting to ${name}`));
+      .catch((e) => alert(`Error connecting to ${name}`));
     desired.onmidimessage = getMIDIMessage;
   });
 
-  let msg;
   if (devices.length === 0) {
-    msg = `No MIDI devices were found.`;
+    return alert(`No MIDI devices were found.`);
   } else {
     htmlNode.removeAttribute(`disabled`);
   }
-  return run(msg);
+
+  return run();
 }
 
 // even if midi device access fails, we still have a synth to play with
 function onMidiFail() {
-  return run(
+  alert(
     `Web MIDI is available, but MIDI device access failed (and the\nspec does not give me more details to help you find out why...)`
   );
 }
@@ -67,7 +66,7 @@ function onMidiFail() {
 async function connectMIDI() {
   if (!navigator.requestMIDIAccess) {
     // Warn the user that they won't have MIDI functionality. Then load anyway
-    run(
+    alert(
       `WebMIDI is not supported (without plugins?) in this browser.\nYou can still play around, just... no MIDI functionality, obviously.`
     );
   } else {
