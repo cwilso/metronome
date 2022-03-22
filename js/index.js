@@ -16,6 +16,7 @@ let bpm = 125;
 let divisions = 8;
 let activeDivision = 2;
 let beepDuration = 0.05;
+let timeSignature = [4, 4];
 
 const counter = new Worker("js/bmp-counter.js");
 
@@ -46,16 +47,33 @@ function buildImpulseSelector() {
 
 // ======== bpm counter bindings ========
 
+function addMeasure(n = 1) {
+  while (n--) {
+    document.querySelectorAll(`.pianoroll tr`).forEach((row) => {
+      const measure = create(`td`);
+      measure.classList.add(`m`);
+      const inner = create(`div`);
+      inner.classList.add(`flex`);
+      measure.appendChild(inner);
+      for (let i = 0; i < timeSignature[0]; i++) {
+        const q = create(`span`);
+        q.classList.add(`q`);
+        inner.appendChild(q);
+      }
+      row.appendChild(measure);
+    });
+  }
+}
+
 counter.onmessage = async (e) => {
   const { tickData, intervals, ticks, bad } = e.data;
 
   if (intervals) {
     generate(intervals.length, (d) => (activeDivision = d), activeDivision);
-
-    // buildDivisions(intervals);
     prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
     intervalValues = intervals;
+    addMeasure(4);
     return;
   }
 
@@ -68,8 +86,10 @@ counter.onmessage = async (e) => {
 
   const flips = await updateTickData(tickData);
   if (flips !== undefined) {
-    updateMetronomePageElements(tickData, flips);
     recorder.tick(tickData, flips);
+    updateMetronomePageElements(tickData, flips);
+
+    if (flips[0]) addMeasure();
   }
 };
 
@@ -109,6 +129,19 @@ async function updateMetronomePageElements(tickData, flips) {
     document
       .querySelectorAll(`path.q${q}`)
       .forEach((e) => e.classList.add(`active`));
+  }
+
+  if (flips[2]) {
+    document
+      .querySelectorAll(`.scrubber`)
+      .forEach((q) => q.classList.remove(`scrubber`));
+    document
+      .querySelectorAll(
+        `.pianoroll tr .m:nth-child(${tickData[0] + 1}) .q:nth-child(${
+          tickData[1] + 1
+        })`
+      )
+      .forEach((q) => q.classList.add(`scrubber`));
   }
 }
 
@@ -280,33 +313,35 @@ slider(
 (function setupRecorderListener() {
   const parent = document.querySelector(`.pianoroll`);
 
-  for(let i=128; i>0; i--) {
-    const row = create(`div`);
-    row.classList.add(`row`);
+  for (let i = 128; i > 0; i--) {
+    const row = create(`tr`);
+    row.classList.add(`note`, `n${i}`);
     parent.appendChild(row);
   }
 
-  const offset = (m, q, d, f) => {
-    return 4 * (m * 4 + q + d / f);
-  };
-
   recorder.addListener({
     noteStarted: ({ note, velocity, start, e }) => {
-      parent.querySelector(`.row:nth-child(${note})`).appendChild(e);
       const f = start.length - 1;
       const [m, q, ..._] = start;
-      e.style.left = `${offset(m, q, start[f], f)}em`;
+      const quarter = document.querySelector(
+        `.pianoroll tr.n${note} .m:nth-child(${
+          m + 1
+        }) .q:nth-child(${q + 1})`
+      );
+      quarter.appendChild(e);
+      e.style.left = `${(100 * start[f]) / f}%`;
       // e.addEventListener(`mousedown`, () => beeps.get(note).start(velocity));
       // document.addEventListener(`mouseup`, () => beeps.get(note).stop());
     },
+
     noteStopped: ({ note, start, stop, e }) => {
       const f = start.length - 1;
       const [m1, q1, ..._] = start;
       const [m2, q2, ...__] = stop;
       const d1 = start[f];
       const d2 = stop[f];
-      const v = offset(m2 - m1, (q2 - q1), (d2 - d1), f);
-      e.style.width = `${v}em`;
+      const v = (d2 - d1) / f + (q2 - q1) + timeSignature[0] * (m2 - m1);
+      e.style.width = `${100 * v}%`;
     },
   });
 })();

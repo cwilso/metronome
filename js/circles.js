@@ -48,6 +48,10 @@ function generate(levels = 10, highlightFn, activeDivision) {
         ].join(` `)
       );
 
+      if (l === 0) {
+        path.classList.add(`q${i}`);
+      }
+
       if (l>0) {
         path.classList.add(`q${(i/(l+1))|0}`);
       }

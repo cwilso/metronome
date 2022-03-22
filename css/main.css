@@ -42,7 +42,7 @@ body > div + div {
   background: #66000010;
   border-radius: 5px;
   display: inline-block;
-  margin-bottom: 0.5em;
+  margin: 1em 0 0.5em;
 }
 
 .keyboard div.black {
@@ -145,32 +145,62 @@ g:hover path.highlight {
   fill: #00dbff;
 }
 
-*:focus {
+.controls *:focus {
   outline: 2px solid red !important;
 }
 
-.pianoroll {
-  width: 90%;
-  height: 50vh;
+.pianoroll-container {
+  width: 100%;
+  height: 20em;
   overflow: auto;
-  background: #4441;
+  border: 1px solid grey;
+  background: #1111;
 }
 
-.pianoroll .row {
+.pianoroll {
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 0%;
+}
+
+.pianoroll tr {
+  height: 0.5em;
+}
+
+.pianoroll tr:nth-child(2n) {
+  background: #1111;
+}
+
+.pianoroll tr .m {
+  width: 10em;
+  line-height: 0;
+}
+
+.pianoroll tr .m:nth-child(2n) {
+  background: #1111;
+}
+
+.pianoroll tr .m .q {
+  display: inline-block;
+  flex-basis: 100%;
+  height: 0.5em;
+  overflow: visible;
+  margin: -1px;
+}
+
+.pianoroll tr .m .note {
   position: relative;
-  height: calc(2 * 100% / 128);
-}
-
-.pianoroll .row:nth-child(2n) {
-  background: #0001;
-}
-
-.pianoroll .row .note {
-  position: absolute;
-  top: 0;
-  left: 0;
   border: 1px solid red;
   background: pink;
   padding: 3px;
   box-sizing: content-box;
+}
+
+.flex {
+  display: flex;
+}
+
+.scrubber {
+  border-left: 2px solid magenta;
+  margin-left: -1px;
 }
