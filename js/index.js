@@ -69,7 +69,6 @@ counter.onmessage = async (e) => {
   const flips = await updateTickData(tickData);
   if (flips !== undefined) {
     updateMetronomePageElements(tickData, flips);
-    updatePianoRoll(tickData);
     recorder.tick(tickData, flips);
   }
 };
@@ -111,27 +110,6 @@ async function updateMetronomePageElements(tickData, flips) {
       .querySelectorAll(`path.q${q}`)
       .forEach((e) => e.classList.add(`active`));
   }
-}
-
-async function updatePianoRoll(tickData) {
-  const [m, q, ...divisions] = tickData;
-  const roll = document.querySelectorAll(`pianoroll`);
-
-  const createMeasure = () => {
-    const measure = create(`span`);
-    measure.classList.add(`m`);
-    //
-  }
-
-  let measures = +roll.getAttribute(`m`) || 0;
-  while (measures <= m) {
-    // make sure we always generate 1 more measure than we currently need
-    roll
-      .querySelectorAll(`.note`)
-      .forEach((row) => row.appendChild(createMeasure()));
-    measures++;
-  }
-  roll.setAttribute(`m`, measures);
 }
 
 // ========= page event bindings =========
@@ -300,25 +278,35 @@ slider(
 })();
 
 (function setupRecorderListener() {
-  const active = [];
+  const parent = document.querySelector(`.pianoroll`);
 
-  const getCell = (note, m, q) => {
-    const cell = document.querySelector(
-      `.note:nth-child(${note}) .m:nth-child(${m}) .q:nth-child(${q})`
-    );
+  for(let i=128; i>0; i--) {
+    const row = create(`div`);
+    row.classList.add(`row`);
+    parent.appendChild(row);
+  }
 
-    return cell;
+  const offset = (m, q, d, f) => {
+    return 4 * (m * 4 + q + d / f);
   };
 
   recorder.addListener({
     noteStarted: ({ note, velocity, start, e }) => {
-      const parent = getCell(note, start[0], start[1]);
-      parent.appendChild(e);
-      active.push(e);
+      parent.querySelector(`.row:nth-child(${note})`).appendChild(e);
+      const f = start.length - 1;
+      const [m, q, ..._] = start;
+      e.style.left = `${offset(m, q, start[f], f)}em`;
+      // e.addEventListener(`mousedown`, () => beeps.get(note).start(velocity));
+      // document.addEventListener(`mouseup`, () => beeps.get(note).stop());
     },
-    noteStopped: ({ note, e }) => {
-      const pos = active.find((v) => v === e);
-      active.splice(pos, 1);
+    noteStopped: ({ note, start, stop, e }) => {
+      const f = start.length - 1;
+      const [m1, q1, ..._] = start;
+      const [m2, q2, ...__] = stop;
+      const d1 = start[f];
+      const d2 = stop[f];
+      const v = offset(m2 - m1, (q2 - q1), (d2 - d1), f);
+      e.style.width = `${v}em`;
     },
   });
 })();

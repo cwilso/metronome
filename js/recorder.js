@@ -84,6 +84,7 @@ class Recorder {
     if (!this.recording) return;
 
     const e = document.createElement(`button`);
+    e.setAttribute(`class`, `note`);
     e.setAttribute(`data-note`, note);
     e.setAttribute(`data-velocity`, velocity);
     e.setAttribute(`data-start`, this.tickData.join(`,`));

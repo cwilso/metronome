@@ -148,3 +148,29 @@ g:hover path.highlight {
 *:focus {
   outline: 2px solid red !important;
 }
+
+.pianoroll {
+  width: 90%;
+  height: 50vh;
+  overflow: auto;
+  background: #4441;
+}
+
+.pianoroll .row {
+  position: relative;
+  height: calc(2 * 100% / 128);
+}
+
+.pianoroll .row:nth-child(2n) {
+  background: #0001;
+}
+
+.pianoroll .row .note {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid red;
+  background: pink;
+  padding: 3px;
+  box-sizing: content-box;
+}
