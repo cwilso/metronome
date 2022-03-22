@@ -87,13 +87,24 @@ function tryIncrement() {
     tickData[0] = m;
     tickData[1] = q;
 
+    const midi24 = (qi / midi24Interval) | 0;
+
+    // always send at a steady 10-ms pace, even if that's
+    // somewhere in between divisions ticking over.
+    if (now - lastFrame > 16) {
+      lastFrame = now;
+      postMessage({ tickData, midi24 });
+      prevTickData = tickData;
+      return;
+    }
+
     // Notify our parent of a new tick if anything
     // changed, checking back-to-front because the
     // smallest divisions change radically more often
     // than the measure or quarter.
     for (let i = tickData.length - 1; i >= 0; i--) {
       if (tickData[i] !== prevTickData[i]) {
-        postMessage({ tickData });
+        postMessage({ tickData, midi24 });
         prevTickData = tickData;
       }
     }
@@ -101,11 +112,12 @@ function tryIncrement() {
 }
 
 const timerIntervals = [];
-let startTime, BPM, intervals, smallest, tickData, prevTickData;
+let startTime, BPM, intervals, midi24Interval, smallest, tickData, prevTickData;
 let ticks = 0,
   last = 0,
   now,
-  bad = 0;
+  bad = 0,
+  lastFrame = -1;
 
 onmessage = async (e) => {
   const { start, stop, bpm, divisions } = e.data;
@@ -121,12 +133,14 @@ function setBPM(bpm = 125, MAX_DIVISION = 8) {
     intervals.push(60000 / (BPM * (i + 2)));
   }
   smallest = intervals[intervals.length - 1];
-  postMessage({ intervals });
+  midi24Interval = intervals[1] / 24;
+  postMessage({ intervals, midi24Interval });
 }
 
 function startCounter() {
   ticks = 0;
   startTime = last = performance.now();
+  lastFrame = startTime;
   tickData = intervals.map((v) => 0);
   prevTickData = intervals.map(() => -1);
   loopWorker.postMessage({ start: true });

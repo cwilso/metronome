@@ -1,6 +1,7 @@
 import { AudioSource } from "./audio-source.js";
 import { context } from "./audio-context.js";
 import { router } from "./router.js";
+import { settings } from "./settings.js";
 
 const sources = {};
 
@@ -59,6 +60,9 @@ class AudioGenerator {
   }
 }
 
-window.AudioGenerator = AudioGenerator;
+const beeps = new AudioGenerator();
+const play = (note, velocity = 24) => {
+  beeps.get(note).play(settings.beepDuration, velocity);
+};
 
-export { AudioGenerator };
+export { AudioGenerator, play };

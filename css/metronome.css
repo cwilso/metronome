@@ -1,35 +1,28 @@
-metronome.css .divisions li.highlight {
-  background: red;
+#metronome {
+  --dim: 15em;
+  width: var(--dim);
+  height: var(--dim);
 }
 
-.divisions {
-  display: flex;
-}
-
-.divisions .clickable:hover {
-  background: #4080f020 !important;
-  cursor: pointer;
-}
-
-g.prominent,
-g:hover {
+#metronome g.prominent,
+#metronome g:hover {
   fill: black;
 }
 
-g {
+#metronome g {
   fill: grey;
   cursor: pointer;
 }
 
-path.active {
+#metronome g path.active {
   fill: #8234c1;
 }
 
-path.active.highlight {
+#metronome g path.active.highlight {
   fill: #4673a4;
 }
 
-g.prominent path.highlight,
-g:hover path.highlight {
+#metronome g.prominent path.highlight,
+#metronome g:hover path.highlight {
   fill: #00dbff;
 }

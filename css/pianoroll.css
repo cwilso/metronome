@@ -52,9 +52,10 @@
 
 .scrubber {
   position: absolute;
-  border-left: 2px solid #18d936;
   top: 0;
   --l: 0;
   left: var(--l);
   height: calc(128 * 0.5em);
+  width: 2px;
+  background: red;
 }
