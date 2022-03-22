@@ -1,0 +1,71 @@
+keyboard.css .keyboard {
+  position: relative;
+  height: 3em;
+  background: #66000010;
+  border-radius: 5px;
+  display: inline-block;
+  margin: 1em 0 0.5em;
+}
+
+.keyboard div.black {
+  z-index: 2;
+}
+
+.keyboard div.black,
+.keyboard div.white {
+  position: relative;
+}
+
+.keyboard div.black {
+  top: 2px;
+}
+
+.keyboard div.black .key {
+  border-top: 0px;
+}
+
+.keyboard div.white {
+  border-top: 2px solid red;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  transform: translate(0, -2.35em);
+}
+
+.key {
+  display: inline-block;
+  width: 0.7em;
+  border: 1px solid gray;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+}
+
+.key + .key {
+  border-left: 0px;
+}
+
+.key.white {
+  background: white;
+  height: 4em;
+}
+
+.key.black {
+  background: black;
+  height: 2.75em;
+}
+
+.key1 {
+  margin-left: calc(1px + 0.25em);
+}
+
+.key3 {
+  margin-right: calc(1px + 0.75em);
+}
+
+.key10 {
+  margin-right: 0.25em;
+}
+
+.key.pressed {
+  background: lime;
+}

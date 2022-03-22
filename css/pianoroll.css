@@ -1,0 +1,60 @@
+.pianoroll-container {
+  position: relative;
+  width: 100%;
+  height: 20em;
+  overflow: auto;
+  border: 1px solid grey;
+  background: #1111;
+}
+
+.pianoroll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 0%;
+}
+
+.pianoroll tr {
+  height: 0.5em;
+}
+
+.pianoroll tr:nth-child(2n) {
+  background: #1111;
+}
+
+.pianoroll tr .m {
+  width: 10em;
+  line-height: 0;
+}
+
+.pianoroll tr .m:nth-child(2n) {
+  background: #1111;
+}
+
+.pianoroll tr .m .q {
+  display: inline-block;
+  flex-basis: 100%;
+  height: 0.5em;
+  overflow: visible;
+  margin: -1px;
+  position: relative;
+}
+
+.pianoroll tr .m .note {
+  position: relative;
+  border: 1px solid red;
+  background: pink;
+  padding: 3px;
+  box-sizing: content-box;
+}
+
+.scrubber {
+  position: absolute;
+  border-left: 2px solid #18d936;
+  top: 0;
+  --l: 0;
+  left: var(--l);
+  height: calc(128 * 0.5em);
+}
