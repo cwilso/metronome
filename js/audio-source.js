@@ -84,6 +84,7 @@ class AudioSource {
   }
 
   start(velocity, attack) {
+    if (velocity > 1) { velocity /= 128; }
     this.sustained = true;
     if (this.timeout) this.__disable(0);
     this.__enable(velocity, attack);
@@ -106,9 +107,10 @@ class AudioSource {
     AudioSource.removeSource(this);
   }
 
-  play(durationInSeconds) {
+  play(durationInSeconds, velocity) {
     if (this.sustained) return;
-    this.__enable();
+    if (velocity > 1) { velocity /= 128; }
+    this.__enable(velocity);
     this.timeout = setTimeout(() => this.__disable(), 1000 * durationInSeconds);
   }
 

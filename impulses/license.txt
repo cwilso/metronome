@@ -17,3 +17,7 @@ d) any distribution made by you hereunder is expressly made subject to an acknow
 5. THESE IMPULSE FILES ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT OR ARISING FROM A COURSE OF DEALING, USAGE, TRADE OR PRACTICE. Some jurisdictions do not allow the exclusion of implied warranties, so the above disclaimer may not apply to you.
 
 IN NO EVENT SHALL THE DISTRIBUTOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THESE IMPULSE FILES.
+
+---
+
+Addendum specific to this github.com/Pomax/metronome repository: only the original .wav files are covered by this license, the .ogg files may not be copied and distributed and only exist as "smaller form factor" equivalents.

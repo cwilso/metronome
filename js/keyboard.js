@@ -90,7 +90,6 @@ class Keyboard {
       Object.fromEntries(keys.split(``).map((c, i) => [c, i + start]));
     Object.assign(this.keyMapping, getCodes(`zsxdcvgbhnjm`, 48));
     Object.assign(this.keyMapping, getCodes(`q2w3er5t6y7ui9o0p[=]`, 60));
-    console.log(this.keyMapping);
 
     this.handleDown = (evt) => {
       if (evt.repeat) return;

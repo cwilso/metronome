@@ -9,7 +9,7 @@ import { Keyboard } from "./keyboard.js";
 import { recorder } from "./recorder.js";
 
 const beeps = (window.beeps = new AudioGenerator());
-const play = (note) => beeps.get(note).play(beepDuration);
+const play = (note, velocity=24) => beeps.get(note).play(beepDuration, velocity);
 
 let prevTickData, startTime, intervalValues;
 let bpm = 125;
@@ -73,7 +73,9 @@ counter.onmessage = async (e) => {
     prevTickData = intervals.map(() => -1);
     prevTickData[0] = -1;
     intervalValues = intervals;
-    addMeasure(4);
+    const p = document.querySelector(`.pianoroll-container`);
+    const t = document.querySelector(`.pianoroll`);
+    while (t.clientWidth < p.clientWidth) addMeasure();
     return;
   }
 
@@ -115,11 +117,14 @@ async function updateMetronomePageElements(tickData, flips) {
     .querySelectorAll(`.highlight`)
     .forEach((e) => e.classList.remove(`highlight`));
   const q = tickData[1];
+  let last, f;
   tickData.forEach((v, i) => {
     if (i === 0) return;
     const n = i > 1 ? `${q * i + v + 1}` : `${(v % 16) + 1}`;
     const qs = `.d${i} *:nth-child(${n})`;
     document.querySelector(qs)?.classList.add(`highlight`);
+    last = v;
+    f = i;
   });
 
   if (flips[1]) {
@@ -131,18 +136,16 @@ async function updateMetronomePageElements(tickData, flips) {
       .forEach((e) => e.classList.add(`active`));
   }
 
-  if (flips[2]) {
-    document
-      .querySelectorAll(`.scrubber`)
-      .forEach((q) => q.classList.remove(`scrubber`));
-    document
-      .querySelectorAll(
-        `.pianoroll tr .m:nth-child(${tickData[0] + 1}) .q:nth-child(${
-          tickData[1] + 1
-        })`
-      )
-      .forEach((q) => q.classList.add(`scrubber`));
-  }
+  const scrubber = document.querySelector(`.pianoroll-container .scrubber`);
+  const qs = [
+    `.pianoroll`,
+    `tr:first-child`,
+    `.m:nth-child(${tickData[0] + 1})`,
+    `.q:nth-child(${tickData[1] + 1})`,
+  ].join(` `);
+  const newPos = document.querySelector(qs);
+  newPos.appendChild(scrubber);
+  scrubber.style.setProperty(`--l`, `${(100 * last) / f}%`);
 }
 
 // ========= page event bindings =========
@@ -230,7 +233,6 @@ document.querySelector(`button.stop`).addEventListener(`click`, () => {
   document.querySelector(`span.runtime`).textContent = runtime.toFixed();
   counter.postMessage({ stop: true });
   const noteData = recorder.stop();
-  console.log(noteData);
 });
 
 document.querySelector(`button.playback`).addEventListener(`click`, () => {
@@ -292,10 +294,10 @@ slider(
   const black = kdiv.querySelector(`.black`);
   black.innerHTML = ``;
   keyboard.keyNodes.forEach((k, i) => {
-    if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
-      white.append(k);
-    } else {
+    if (k.classList.contains(`black`)) {
       black.append(k);
+    } else {
+      white.append(k);
     }
   });
 })();
@@ -324,9 +326,7 @@ slider(
       const f = start.length - 1;
       const [m, q, ..._] = start;
       const quarter = document.querySelector(
-        `.pianoroll tr.n${note} .m:nth-child(${
-          m + 1
-        }) .q:nth-child(${q + 1})`
+        `.pianoroll tr.n${note} .m:nth-child(${m + 1}) .q:nth-child(${q + 1})`
       );
       quarter.appendChild(e);
       e.style.left = `${(100 * start[f]) / f}%`;
