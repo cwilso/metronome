@@ -30,6 +30,16 @@ class Recorder {
     this.recording = false;
     this.playing = false;
     this.intervals = [];
+    this.listeners = [];
+  }
+
+  addListener(l) {
+    this.listeners.push(l);
+  }
+
+  removeListener(l) {
+    const pos = this.listeners.findIndex((e) => e === l);
+    this.listeners.splice(pos, 1);
   }
 
   tick(tickData, flips) {
@@ -63,25 +73,39 @@ class Recorder {
   }
 
   stop() {
-    this.recording = false;
-    this.playing = false;
-    // stop outstanding notes
     Object.values(this.current).forEach((packet) => this.noteoff(packet.note));
     this.current = {};
+    this.recording = false;
+    this.playing = false;
     return this.data;
   }
 
   noteon(note, velocity) {
     if (!this.recording) return;
-    const packet = { note, velocity, start: this.tickData };
+
+    const e = document.createElement(`button`);
+    e.setAttribute(`data-note`, note);
+    e.setAttribute(`data-velocity`, velocity);
+    e.setAttribute(`data-start`, this.tickData.join(`,`));
+
+    const packet = {
+      note,
+      velocity,
+      start: this.tickData,
+      e,
+    };
+
     this.current[note] = packet;
     this.data.push(packet);
+    this.listeners.forEach((l) => l.noteStarted(packet));
   }
 
   noteoff(note) {
     const packet = this.current[note];
     if (!packet) return;
     packet.stop = this.tickData;
+    packet.e.setAttribute(`data-stop`, this.tickData.join(`,`));
+    if (this.recording) this.listeners.forEach((l) => l.noteStopped(packet));
     delete this.current[note];
   }
 

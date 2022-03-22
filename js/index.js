@@ -68,8 +68,9 @@ counter.onmessage = async (e) => {
 
   const flips = await updateTickData(tickData);
   if (flips !== undefined) {
-    recorder.tick(tickData, flips);
     updateMetronomePageElements(tickData, flips);
+    updatePianoRoll(tickData);
+    recorder.tick(tickData, flips);
   }
 };
 
@@ -110,6 +111,27 @@ async function updateMetronomePageElements(tickData, flips) {
       .querySelectorAll(`path.q${q}`)
       .forEach((e) => e.classList.add(`active`));
   }
+}
+
+async function updatePianoRoll(tickData) {
+  const [m, q, ...divisions] = tickData;
+  const roll = document.querySelectorAll(`pianoroll`);
+
+  const createMeasure = () => {
+    const measure = create(`span`);
+    measure.classList.add(`m`);
+    //
+  }
+
+  let measures = +roll.getAttribute(`m`) || 0;
+  while (measures <= m) {
+    // make sure we always generate 1 more measure than we currently need
+    roll
+      .querySelectorAll(`.note`)
+      .forEach((row) => row.appendChild(createMeasure()));
+    measures++;
+  }
+  roll.setAttribute(`m`, measures);
 }
 
 // ========= page event bindings =========
@@ -274,6 +296,30 @@ slider(
     const l = create(`label`);
     l.textContent = e.getAttribute(`label`);
     eq.append(l, e);
+  });
+})();
+
+(function setupRecorderListener() {
+  const active = [];
+
+  const getCell = (note, m, q) => {
+    const cell = document.querySelector(
+      `.note:nth-child(${note}) .m:nth-child(${m}) .q:nth-child(${q})`
+    );
+
+    return cell;
+  };
+
+  recorder.addListener({
+    noteStarted: ({ note, velocity, start, e }) => {
+      const parent = getCell(note, start[0], start[1]);
+      parent.appendChild(e);
+      active.push(e);
+    },
+    noteStopped: ({ note, e }) => {
+      const pos = active.find((v) => v === e);
+      active.splice(pos, 1);
+    },
   });
 })();
 
