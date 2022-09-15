@@ -21,16 +21,7 @@ var timerWorker = null;     // The Web Worker used to fire timer messages
 
 
 // First, let's shim the requestAnimationFrame API, with a setTimeout fallback
-window.requestAnimFrame = (function(){
-    return  window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function( callback ){
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
+window.requestAnimFrame = window.requestAnimationFrame;
 
 function nextNote() {
     // Advance current note and time by a 16th note...
@@ -77,6 +68,9 @@ function scheduler() {
 }
 
 function play() {
+    if (!audioContext)
+        audioContext = new AudioContext();
+
     if (!unlocked) {
       // play silent buffer to unlock the audio
       var buffer = audioContext.createBuffer(1, 1, 22050);
@@ -145,15 +139,6 @@ function init(){
     container.appendChild(canvas);    
     canvasContext.strokeStyle = "#ffffff";
     canvasContext.lineWidth = 2;
-
-    // NOTE: THIS RELIES ON THE MONKEYPATCH LIBRARY BEING LOADED FROM
-    // Http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js
-    // TO WORK ON CURRENT CHROME!!  But this means our code can be properly
-    // spec-compliant, and work on Chrome, Safari and Firefox.
-
-    audioContext = new AudioContext();
-
-    // if we wanted to load audio files, etc., this is where we should do it.
 
     window.onorientationchange = resetCanvas;
     window.onresize = resetCanvas;
