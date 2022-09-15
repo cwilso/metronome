@@ -104,25 +104,26 @@ function resetCanvas (e) {
 
 function draw() {
     var currentNote = last16thNoteDrawn;
-    var currentTime = audioContext.currentTime;
+    if (audioContext) {
+        var currentTime = audioContext.currentTime;
 
-    while (notesInQueue.length && notesInQueue[0].time < currentTime) {
-        currentNote = notesInQueue[0].note;
-        notesInQueue.splice(0,1);   // remove note from queue
-    }
-
-    // We only need to draw if the note has moved.
-    if (last16thNoteDrawn != currentNote) {
-        var x = Math.floor( canvas.width / 18 );
-        canvasContext.clearRect(0,0,canvas.width, canvas.height); 
-        for (var i=0; i<16; i++) {
-            canvasContext.fillStyle = ( currentNote == i ) ? 
-                ((currentNote%4 === 0)?"red":"blue") : "black";
-            canvasContext.fillRect( x * (i+1), x, x/2, x/2 );
+        while (notesInQueue.length && notesInQueue[0].time < currentTime) {
+            currentNote = notesInQueue[0].note;
+            notesInQueue.splice(0,1);   // remove note from queue
         }
-        last16thNoteDrawn = currentNote;
-    }
 
+        // We only need to draw if the note has moved.
+        if (last16thNoteDrawn != currentNote) {
+            var x = Math.floor( canvas.width / 18 );
+            canvasContext.clearRect(0,0,canvas.width, canvas.height); 
+            for (var i=0; i<16; i++) {
+                canvasContext.fillStyle = ( currentNote == i ) ? 
+                    ((currentNote%4 === 0)?"red":"blue") : "black";
+                canvasContext.fillRect( x * (i+1), x, x/2, x/2 );
+            }
+            last16thNoteDrawn = currentNote;
+        }
+    }
     // set up to draw again
     requestAnimFrame(draw);
 }
